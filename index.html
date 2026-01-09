@@ -1,597 +1,541 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manifesto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Site Başlığı</title>
     <style>
-        * {
+        body, .content-container, .header, .tree, .small, .sublink_small, .sublink_small:visited {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        
-        body {
-            background: #f8f9fa;
-            color: #212529;
-            line-height: 1.6;
+        body, .header, .tree {
+            font-family: monospace;
         }
-        
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        /* Sol Menü */
-        .sidebar {
-            width: 280px;
-            background: #1a1a2e;
-            color: white;
-            padding: 30px 20px;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-        
-        .site-title {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 40px;
-            color: #64ffda;
-            border-bottom: 2px solid #64ffda;
-            padding-bottom: 10px;
-        }
-        
-        .menu-list {
-            list-style: none;
-        }
-        
-        .menu-item {
-            margin-bottom: 12px;
-        }
-        
-        .menu-item a {
-            color: #ccd6f6;
-            text-decoration: none;
-            display: block;
-            padding: 12px 15px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            font-size: 16px;
-        }
-        
-        .menu-item a:hover {
-            background: rgba(100, 255, 218, 0.1);
-            color: #64ffda;
-        }
-        
-        .menu-item a.active {
-            background: rgba(100, 255, 218, 0.2);
-            color: #64ffda;
-            border-left: 3px solid #64ffda;
-        }
-        
-        .footer-note {
-            margin-top: 50px;
-            font-size: 14px;
-            color: #8892b0;
-            line-height: 1.5;
-        }
-        
-        /* Ana İçerik */
-        .content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 40px;
+        .content-container {
             max-width: 800px;
+            margin-left: 1%;
+            padding: 20px;
+            word-wrap: break-word;
         }
-        
-        .content-header {
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e9ecef;
+        .header, .tree {
+            white-space: pre;
+            margin-top: 10px;
+            margin-left: 1%;
         }
-        
-        .content-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 10px;
+        .header {
+            font-size: 14px;
         }
-        
-        .content-body {
+        .tree {
+            line-height: 1;
             font-size: 18px;
-            line-height: 1.8;
         }
-        
-        .content-body p {
-            margin-bottom: 20px;
+        .small, .sublink_small {
+            font-size: 14px;
         }
-        
-        .content-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: #64ffda;
-            background: #1a1a2e;
-            padding: 10px 20px;
-            border-radius: 6px;
+        .sublink_small {
+            color: black;
             text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
+        }
+        .sublink_small:visited {
+            color: gray;
+        }
+        .sublink_small:hover {
+            text-decoration: underline;
         }
         
-        .content-link:hover {
-            background: #252547;
-            transform: translateY(-2px);
+        /* Düzenleme Kontrolleri */
+        .edit-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            z-index: 1000;
+        }
+        .edit-btn {
+            font-family: monospace;
+            font-size: 12px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin: 2px;
+        }
+        .edit-btn:hover {
+            background: #e5e5e5;
+        }
+        .edit-input {
+            font-family: monospace;
+            font-size: 14px;
+            width: 100%;
+            padding: 2px;
+            margin: 2px 0;
+        }
+        .edit-textarea {
+            font-family: monospace;
+            font-size: 14px;
+            width: 100%;
+            height: 200px;
+            padding: 5px;
+            margin: 5px 0;
         }
         
-        /* Şifre Modal */
+        /* İçerik Görüntüleme Alanı */
+        .content-view {
+            margin-top: 20px;
+            padding: 20px;
+            border-top: 1px solid #eee;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Modal */
         .modal {
-            display: flex;
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(26, 26, 46, 0.95);
-            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
         }
-        
         .modal-content {
             background: white;
-            padding: 40px;
-            border-radius: 10px;
-            width: 400px;
-            max-width: 90%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        }
-        
-        .modal-title {
-            font-size: 24px;
-            color: #1a1a2e;
-            margin-bottom: 10px;
-        }
-        
-        .modal-subtitle {
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
-        .password-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 6px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            transition: border 0.3s ease;
-        }
-        
-        .password-input:focus {
-            border-color: #64ffda;
-            outline: none;
-        }
-        
-        .password-btn {
-            width: 100%;
-            background: #1a1a2e;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        .password-btn:hover {
-            background: #252547;
-        }
-        
-        .error-message {
-            color: #ff6b6b;
-            margin-top: 10px;
-            display: none;
-        }
-        
-        /* Düzenleme Paneli */
-        .edit-panel {
-            background: #f1f3f5;
-            padding: 30px;
-            border-radius: 10px;
-            margin-top: 40px;
-            border: 1px solid #dee2e6;
-        }
-        
-        .edit-panel h3 {
-            margin-bottom: 20px;
-            color: #1a1a2e;
-        }
-        
-        .edit-input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        
-        .edit-textarea {
-            width: 100%;
-            height: 200px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            font-size: 16px;
-            resize: vertical;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: #1a1a2e;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #252547;
-        }
-        
-        .btn-danger {
-            background: #ff6b6b;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #ff5252;
-        }
-        
-        .btn-success {
-            background: #64ffda;
-            color: #1a1a2e;
-        }
-        
-        .btn-success:hover {
-            background: #52e3c2;
-        }
-        
-        .edit-toggle {
-            background: #64ffda;
-            color: #1a1a2e;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        
-        .edit-toggle:hover {
-            background: #52e3c2;
-        }
-        
-        /* Mobil Uyumluluk */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
-            
-            .content {
-                margin-left: 0;
-                padding: 20px;
-            }
-            
-            .modal-content {
-                width: 90%;
-                padding: 30px 20px;
-            }
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
-    <!-- Şifre Giriş Modalı -->
-    <div id="passwordModal" class="modal">
+<div class="content-container">
+    <!-- Düzenleme Kontrolleri -->
+    <div class="edit-controls">
+        <button class="edit-btn" onclick="toggleEditMode()">Düzenleme Modu</button>
+        <button class="edit-btn" onclick="addNewCategory()">+ Ana Başlık</button>
+        <button class="edit-btn" onclick="exportData()">📥 Veriyi İndir</button>
+        <button class="edit-btn" onclick="importData()">📤 Veri Yükle</button>
+    </div>
+
+    <!-- Ana İçerik -->
+    <div class="tree" id="treeContent">
+        <!-- Ağaç yapısı buraya eklenecek -->
+    </div>
+    
+    <!-- İçerik Görüntüleme Alanı -->
+    <div class="content-view" id="contentView" style="display: none;">
+        <button class="edit-btn" onclick="hideContentView()">✕ Kapat</button>
+        <div id="contentDisplay"></div>
+    </div>
+    
+    <!-- İçerik Düzenleme Modalı -->
+    <div class="modal" id="editModal">
         <div class="modal-content">
-            <h2 class="modal-title">🔐 Manifesto Düzenleyici</h2>
-            <p class="modal-subtitle">İçerik eklemek ve düzenlemek için şifrenizi girin.</p>
-            <input type="password" id="passwordInput" class="password-input" placeholder="Şifre" autofocus>
-            <button id="passwordSubmit" class="password-btn">Giriş Yap</button>
-            <p id="errorMessage" class="error-message">Hatalı şifre! Lütfen tekrar deneyin.</p>
+            <h3 style="font-family: monospace;">İçerik Düzenle</h3>
+            <input type="text" id="editTitle" class="edit-input" placeholder="Başlık">
+            <textarea id="editContent" class="edit-textarea" placeholder="İçerik"></textarea>
+            <div style="margin-top: 10px;">
+                <button class="edit-btn" onclick="saveContent()">Kaydet</button>
+                <button class="edit-btn" onclick="closeModal()">İptal</button>
+                <button class="edit-btn" onclick="deleteContent()" style="background: #ffebee;">Sil</button>
+            </div>
         </div>
     </div>
-
-    <div class="container">
-        <!-- Sol Menü -->
-        <aside class="sidebar">
-            <h1 class="site-title">MANİFESTO</h1>
-            <ul id="menuList" class="menu-list">
-                <!-- Menü başlıkları JavaScript ile eklenecek -->
-            </ul>
-            <div class="footer-note">
-                <p>Şifre ile giriş yaparak maddeler ekleyebilir, düzenleyebilirsiniz.</p>
-                <p style="margin-top: 10px; font-size: 12px;">Şifre: 123</p>
-            </div>
-        </aside>
-
-        <!-- Ana İçerik -->
-        <main class="content">
-            <div class="content-header">
-                <h2 id="contentTitle" class="content-title">Hoş Geldiniz</h2>
-                <button id="editToggleBtn" class="edit-toggle" style="display: none;">
-                    ✏️ Düzenleme Modu
-                </button>
-            </div>
-            
-            <div id="contentBody" class="content-body">
-                <p>Sol menüden bir başlık seçin veya şifre girerek yeni içerikler ekleyin.</p>
-                <p>Bu site manifesto oluşturma amacıyla hazırlanmıştır.</p>
-            </div>
-            
-            <!-- Düzenleme Paneli (başlangıçta gizli) -->
-            <div id="editPanel" class="edit-panel" style="display: none;">
-                <h3>📝 İçerik Düzenle</h3>
-                <input type="text" id="editTitle" class="edit-input" placeholder="Başlık">
-                <textarea id="editContent" class="edit-textarea" placeholder="İçerik (HTML kullanabilirsiniz)"></textarea>
-                <input type="text" id="editLink" class="edit-input" placeholder="Link (isteğe bağlı)">
-                
-                <div class="button-group">
-                    <button id="saveBtn" class="btn btn-primary">💾 Kaydet</button>
-                    <button id="deleteBtn" class="btn btn-danger">🗑️ Sil</button>
-                    <button id="newBtn" class="btn btn-success">➕ Yeni Madde</button>
-                    <button id="exportBtn" class="btn">📥 JSON İndir</button>
-                </div>
-            </div>
-        </main>
+    
+    <!-- Yeni Öğe Modalı -->
+    <div class="modal" id="newItemModal">
+        <div class="modal-content">
+            <h3 style="font-family: monospace;">Yeni Öğe Ekle</h3>
+            <select id="itemType" class="edit-input" onchange="toggleParentSelect()">
+                <option value="category">Ana Başlık</option>
+                <option value="subitem">Alt Başlık</option>
+            </select>
+            <select id="parentCategory" class="edit-input" style="display: none;">
+                <!-- Ana başlıklar buraya eklenecek -->
+            </select>
+            <input type="text" id="newItemTitle" class="edit-input" placeholder="Başlık">
+            <button class="edit-btn" onclick="addItem()">Ekle</button>
+            <button class="edit-btn" onclick="closeNewItemModal()">İptal</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        // 🔐 Şifre Doğrulama - Şifre: 123
-        // NOT: Gerçek uygulamada bu hash sunucu tarafından doğrulanmalı
-        const STORED_HASH = 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3'; // '123' için SHA-256 hash
-        const SALT = 'manifesto_salt_2024';
-        
-        // Hash fonksiyonu
-        async function hashPassword(password) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password + SALT);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+<script>
+    // 📦 Veri Yapısı
+    let siteData = JSON.parse(localStorage.getItem('siteData')) || [
+        {
+            id: 1,
+            title: "ilk-baslik.html",
+            content: "Bu ilk başlığın içeriği.\n\nBuraya istediğiniz her şeyi yazabilirsiniz.\n\n- Madde 1\n- Madde 2\n- Madde 3",
+            children: [
+                { id: 11, title: "alt-baslik-1.html", content: "Alt başlık 1 içeriği" },
+                { id: 12, title: "alt-baslik-2.html", content: "Alt başlık 2 içeriği" }
+            ]
+        },
+        {
+            id: 2,
+            title: "ikinci-baslik.html",
+            content: "İkinci başlık içeriği burada.",
+            children: []
         }
+    ];
+    
+    let editMode = false;
+    let currentEditingId = null;
+    let currentParentId = null;
+    
+    // 🌳 Ağaç Yapısını Render Et
+    function renderTree() {
+        const treeContent = document.getElementById('treeContent');
+        let html = '';
         
-        // 📦 Veri Yapısı
-        let manifestoData = JSON.parse(localStorage.getItem('manifestoData')) || [
-            { 
-                id: 1, 
-                title: 'Başlangıç', 
-                content: 'Bu bir manifesto sitesidir. Sol menüden başlıkları seçebilir, şifre ile giriş yaparak içerikleri düzenleyebilirsiniz.', 
-                link: '' 
-            }
-        ];
-        
-        let isEditMode = false;
-        let currentItemId = manifestoData.length > 0 ? manifestoData[0].id : null;
-        
-        // DOM Elementleri
-        const passwordModal = document.getElementById('passwordModal');
-        const passwordInput = document.getElementById('passwordInput');
-        const passwordSubmit = document.getElementById('passwordSubmit');
-        const errorMessage = document.getElementById('errorMessage');
-        const menuList = document.getElementById('menuList');
-        const contentTitle = document.getElementById('contentTitle');
-        const contentBody = document.getElementById('contentBody');
-        const editToggleBtn = document.getElementById('editToggleBtn');
-        const editPanel = document.getElementById('editPanel');
-        const editTitle = document.getElementById('editTitle');
-        const editContent = document.getElementById('editContent');
-        const editLink = document.getElementById('editLink');
-        const saveBtn = document.getElementById('saveBtn');
-        const deleteBtn = document.getElementById('deleteBtn');
-        const newBtn = document.getElementById('newBtn');
-        const exportBtn = document.getElementById('exportBtn');
-        
-        // 🔑 Şifre Doğrulama
-        passwordSubmit.addEventListener('click', async () => {
-            const inputHash = await hashPassword(passwordInput.value);
-            if (inputHash === STORED_HASH) {
-                passwordModal.style.display = 'none';
-                editToggleBtn.style.display = 'inline-block';
-                loadManifesto();
+        siteData.forEach((category, index) => {
+            // Ana başlık
+            html += `|——<a href="#" onclick="viewContent(${category.id}, null)" class="small">${category.title}</a>\n`;
+            
+            if (editMode) {
+                html += ` <button class="edit-btn" onclick="editContent(${category.id}, null)" style="font-size:10px; padding:1px 4px;">✎</button>`;
+                html += ` <button class="edit-btn" onclick="deleteCategory(${category.id})" style="font-size:10px; padding:1px 4px; background:#ffebee;">✕</button>`;
+                html += ` <button class="edit-btn" onclick="addSubItem(${category.id})" style="font-size:10px; padding:1px 4px;">+</button>\n`;
             } else {
-                errorMessage.style.display = 'block';
-                passwordInput.value = '';
-                passwordInput.focus();
+                html += '\n';
             }
-        });
-        
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                passwordSubmit.click();
-            }
-        });
-        
-        // 📜 Manifesto Yükleme
-        function loadManifesto() {
-            menuList.innerHTML = '';
-            manifestoData.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'menu-item';
-                const a = document.createElement('a');
-                a.href = '#';
-                a.textContent = item.title;
-                if (item.id === currentItemId) a.classList.add('active');
+            
+            // Alt başlıklar
+            category.children.forEach((child, childIndex) => {
+                html += `|&nbsp;&nbsp;|——<a href="#" onclick="viewContent(${category.id}, ${child.id})" class="sublink_small">${child.title}</a>`;
                 
-                a.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showContent(item.id);
-                    // Aktif menü öğesini güncelle
-                    document.querySelectorAll('.menu-item a').forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    a.classList.add('active');
-                });
+                if (editMode) {
+                    html += ` <button class="edit-btn" onclick="editContent(${category.id}, ${child.id})" style="font-size:10px; padding:1px 4px;">✎</button>`;
+                    html += ` <button class="edit-btn" onclick="deleteSubItem(${category.id}, ${child.id})" style="font-size:10px; padding:1px 4px; background:#ffebee;">✕</button>`;
+                }
                 
-                li.appendChild(a);
-                menuList.appendChild(li);
+                html += '\n';
             });
             
-            if (manifestoData.length > 0 && currentItemId) {
-                showContent(currentItemId);
-            }
-        }
-        
-        function showContent(id) {
-            const item = manifestoData.find(it => it.id === id);
-            if (!item) return;
-            
-            currentItemId = id;
-            contentTitle.textContent = item.title;
-            contentBody.innerHTML = item.content;
-            
-            // Link varsa ekle
-            if (item.link) {
-                const linkEl = document.createElement('a');
-                linkEl.href = item.link;
-                linkEl.target = '_blank';
-                linkEl.className = 'content-link';
-                linkEl.textContent = 'İlgili Kaynak →';
-                contentBody.appendChild(linkEl);
-            }
-            
-            // Düzenleme modu açıksa formu güncelle
-            if (isEditMode) {
-                editTitle.value = item.title;
-                editContent.value = item.content;
-                editLink.value = item.link || '';
-            }
-        }
-        
-        // ✏️ Düzenleme İşlemleri
-        editToggleBtn.addEventListener('click', () => {
-            isEditMode = !isEditMode;
-            editPanel.style.display = isEditMode ? 'block' : 'none';
-            editToggleBtn.textContent = isEditMode ? '❌ Düzenlemeden Çık' : '✏️ Düzenleme Modu';
-            
-            if (isEditMode && currentItemId) {
-                const item = manifestoData.find(it => it.id === currentItemId);
-                editTitle.value = item.title;
-                editContent.value = item.content;
-                editLink.value = item.link || '';
+            if (category.children.length === 0 && index !== siteData.length - 1) {
+                html += '|\n';
             }
         });
         
-        saveBtn.addEventListener('click', () => {
-            if (!currentItemId) return;
-            
-            const item = manifestoData.find(it => it.id === currentItemId);
+        treeContent.innerHTML = html;
+        localStorage.setItem('siteData', JSON.stringify(siteData));
+    }
+    
+    // 👁️ İçeriği Görüntüle
+    function viewContent(categoryId, itemId) {
+        event.preventDefault();
+        
+        const contentDisplay = document.getElementById('contentDisplay');
+        const contentView = document.getElementById('contentView');
+        
+        if (itemId === null) {
+            // Ana başlık içeriği
+            const category = siteData.find(c => c.id === categoryId);
+            contentDisplay.innerHTML = `<h3>${category.title}</h3>\n\n${category.content}`;
+        } else {
+            // Alt başlık içeriği
+            const category = siteData.find(c => c.id === categoryId);
+            const item = category.children.find(c => c.id === itemId);
+            contentDisplay.innerHTML = `<h3>${item.title}</h3>\n\n${item.content}`;
+        }
+        
+        contentView.style.display = 'block';
+        contentView.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // 🙈 İçerik Görünümünü Gizle
+    function hideContentView() {
+        document.getElementById('contentView').style.display = 'none';
+    }
+    
+    // ✏️ Düzenleme Modunu Aç/Kapat
+    function toggleEditMode() {
+        editMode = !editMode;
+        document.querySelector('.edit-controls').firstElementChild.textContent = 
+            editMode ? 'Düzenlemeyi Bitir' : 'Düzenleme Modu';
+        renderTree();
+    }
+    
+    // 📝 İçerik Düzenle
+    function editContent(categoryId, itemId) {
+        currentEditingId = { categoryId, itemId };
+        const modal = document.getElementById('editModal');
+        const editTitle = document.getElementById('editTitle');
+        const editContent = document.getElementById('editContent');
+        
+        if (itemId === null) {
+            // Ana başlık düzenle
+            const category = siteData.find(c => c.id === categoryId);
+            editTitle.value = category.title;
+            editContent.value = category.content;
+        } else {
+            // Alt başlık düzenle
+            const category = siteData.find(c => c.id === categoryId);
+            const item = category.children.find(c => c.id === itemId);
+            editTitle.value = item.title;
+            editContent.value = item.content;
+        }
+        
+        modal.style.display = 'flex';
+    }
+    
+    // 💾 İçerik Kaydet
+    function saveContent() {
+        const editTitle = document.getElementById('editTitle');
+        const editContent = document.getElementById('editContent');
+        
+        if (!editTitle.value.trim()) {
+            alert('Başlık boş olamaz!');
+            return;
+        }
+        
+        const { categoryId, itemId } = currentEditingId;
+        
+        if (itemId === null) {
+            // Ana başlık güncelle
+            const category = siteData.find(c => c.id === categoryId);
+            category.title = editTitle.value;
+            category.content = editContent.value;
+        } else {
+            // Alt başlık güncelle
+            const category = siteData.find(c => c.id === categoryId);
+            const item = category.children.find(c => c.id === itemId);
             item.title = editTitle.value;
             item.content = editContent.value;
-            item.link = editLink.value;
-            
-            localStorage.setItem('manifestoData', JSON.stringify(manifestoData));
-            loadManifesto();
-            alert('✅ Değişiklikler kaydedildi!');
+        }
+        
+        closeModal();
+        renderTree();
+        
+        // Eğer içerik görüntüleniyorsa güncelle
+        const contentView = document.getElementById('contentView');
+        if (contentView.style.display === 'block') {
+            viewContent(categoryId, itemId);
+        }
+    }
+    
+    // 🗑️ İçerik Sil
+    function deleteContent() {
+        if (!confirm('Bu öğeyi silmek istediğinize emin misiniz?')) return;
+        
+        const { categoryId, itemId } = currentEditingId;
+        
+        if (itemId === null) {
+            // Ana başlık sil
+            if (siteData.length <= 1) {
+                alert('En az bir ana başlık kalmalı!');
+                return;
+            }
+            siteData = siteData.filter(c => c.id !== categoryId);
+        } else {
+            // Alt başlık sil
+            const category = siteData.find(c => c.id === categoryId);
+            category.children = category.children.filter(c => c.id !== itemId);
+        }
+        
+        closeModal();
+        renderTree();
+        hideContentView();
+    }
+    
+    // ❌ Modalı Kapat
+    function closeModal() {
+        document.getElementById('editModal').style.display = 'none';
+        currentEditingId = null;
+    }
+    
+    // ➕ Yeni Ana Başlık Ekle
+    function addNewCategory() {
+        const title = prompt('Yeni ana başlık adı:');
+        if (!title) return;
+        
+        const newId = siteData.length > 0 ? Math.max(...siteData.map(c => c.id)) + 1 : 1;
+        siteData.push({
+            id: newId,
+            title: title + (title.endsWith('.html') ? '' : '.html'),
+            content: 'Yeni içerik buraya yazılacak.',
+            children: []
         });
         
-        deleteBtn.addEventListener('click', () => {
-            if (!currentItemId || manifestoData.length <= 1) {
-                alert('En az bir madde kalmalıdır!');
+        renderTree();
+    }
+    
+    // ➕ Alt Başlık Ekle
+    function addSubItem(categoryId) {
+        const title = prompt('Yeni alt başlık adı:');
+        if (!title) return;
+        
+        const category = siteData.find(c => c.id === categoryId);
+        const newId = category.children.length > 0 ? 
+            Math.max(...category.children.map(c => c.id)) + 1 : 1;
+        
+        category.children.push({
+            id: newId,
+            title: title + (title.endsWith('.html') ? '' : '.html'),
+            content: 'Yeni alt başlık içeriği buraya yazılacak.'
+        });
+        
+        renderTree();
+    }
+    
+    // 🗑️ Ana Başlık Sil
+    function deleteCategory(categoryId) {
+        if (!confirm('Bu ana başlığı ve tüm alt başlıklarını silmek istediğinize emin misiniz?')) return;
+        
+        if (siteData.length <= 1) {
+            alert('En az bir ana başlık kalmalı!');
+            return;
+        }
+        
+        siteData = siteData.filter(c => c.id !== categoryId);
+        renderTree();
+        hideContentView();
+    }
+    
+    // 🗑️ Alt Başlık Sil
+    function deleteSubItem(categoryId, itemId) {
+        if (!confirm('Bu alt başlığı silmek istediğinize emin misiniz?')) return;
+        
+        const category = siteData.find(c => c.id === categoryId);
+        category.children = category.children.filter(c => c.id !== itemId);
+        renderTree();
+        
+        // Eğer silinen içerik görüntüleniyorsa gizle
+        const contentView = document.getElementById('contentView');
+        if (contentView.style.display === 'block') {
+            const contentDisplay = document.getElementById('contentDisplay');
+            if (contentDisplay.innerHTML.includes(document.querySelector(`[onclick*="${itemId}"]`).textContent)) {
+                hideContentView();
+            }
+        }
+    }
+    
+    // 📥 Veriyi İndir
+    function exportData() {
+        const dataStr = JSON.stringify(siteData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'site-verisi.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    // 📤 Veri Yükle
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    siteData = importedData;
+                    renderTree();
+                    alert('Veri başarıyla yüklendi!');
+                } catch (error) {
+                    alert('Geçersiz veri dosyası!');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+    
+    // 📄 Yeni Öğe Modalını Aç
+    function openNewItemModal() {
+        document.getElementById('newItemModal').style.display = 'flex';
+    }
+    
+    // ❌ Yeni Öğe Modalını Kapat
+    function closeNewItemModal() {
+        document.getElementById('newItemModal').style.display = 'none';
+        document.getElementById('newItemTitle').value = '';
+    }
+    
+    // 🔄 Parent Select'i Güncelle
+    function toggleParentSelect() {
+        const itemType = document.getElementById('itemType').value;
+        const parentSelect = document.getElementById('parentCategory');
+        
+        if (itemType === 'subitem') {
+            parentSelect.style.display = 'block';
+            parentSelect.innerHTML = '';
+            siteData.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.title;
+                parentSelect.appendChild(option);
+            });
+        } else {
+            parentSelect.style.display = 'none';
+        }
+    }
+    
+    // ➕ Yeni Öğe Ekle (Modal ile)
+    function addItem() {
+        const itemType = document.getElementById('itemType').value;
+        const title = document.getElementById('newItemTitle').value.trim();
+        
+        if (!title) {
+            alert('Başlık boş olamaz!');
+            return;
+        }
+        
+        if (itemType === 'category') {
+            // Yeni ana başlık
+            const newId = siteData.length > 0 ? Math.max(...siteData.map(c => c.id)) + 1 : 1;
+            siteData.push({
+                id: newId,
+                title: title + (title.endsWith('.html') ? '' : '.html'),
+                content: 'Yeni içerik buraya yazılacak.',
+                children: []
+            });
+        } else {
+            // Yeni alt başlık
+            const parentId = parseInt(document.getElementById('parentCategory').value);
+            const category = siteData.find(c => c.id === parentId);
+            
+            if (!category) {
+                alert('Lütfen bir ana başlık seçin!');
                 return;
             }
             
-            if (confirm('Bu maddeyi silmek istediğinize emin misiniz?')) {
-                manifestoData = manifestoData.filter(it => it.id !== currentItemId);
-                localStorage.setItem('manifestoData', JSON.stringify(manifestoData));
-                
-                // İlk maddeye geç
-                currentItemId = manifestoData[0].id;
-                loadManifesto();
-                
-                editPanel.style.display = 'none';
-                isEditMode = false;
-                editToggleBtn.textContent = '✏️ Düzenleme Modu';
-            }
-        });
+            const newId = category.children.length > 0 ? 
+                Math.max(...category.children.map(c => c.id)) + 1 : 1;
+            
+            category.children.push({
+                id: newId,
+                title: title + (title.endsWith('.html') ? '' : '.html'),
+                content: 'Yeni alt başlık içeriği buraya yazılacak.'
+            });
+        }
         
-        newBtn.addEventListener('click', () => {
-            const newId = manifestoData.length > 0 
-                ? Math.max(...manifestoData.map(it => it.id)) + 1 
-                : 1;
-            
-            const newItem = { 
-                id: newId, 
-                title: 'Yeni Madde', 
-                content: 'Buraya içeriğinizi yazın...', 
-                link: '' 
-            };
-            
-            manifestoData.push(newItem);
-            localStorage.setItem('manifestoData', JSON.stringify(manifestoData));
-            
-            currentItemId = newId;
-            loadManifesto();
-            
-            editTitle.value = newItem.title;
-            editContent.value = newItem.content;
-            editLink.value = newItem.link;
-            editPanel.style.display = 'block';
-            isEditMode = true;
-            editToggleBtn.textContent = '❌ Düzenlemeden Çık';
-        });
-        
-        exportBtn.addEventListener('click', () => {
-            const dataStr = JSON.stringify(manifestoData, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'manifesto-data.json';
-            a.click();
-            URL.revokeObjectURL(url);
-            alert('📥 Manifesto verisi indirildi!');
-        });
-        
-        // Sayfa Yüklendiğinde
-        window.onload = () => {
-            // Varsayılan olarak şifre modalını göster
-            passwordModal.style.display = 'flex';
-            
-            // Manifesto verisini yükle
-            loadManifesto();
-        };
-        
-        // Demo amaçlı: Konsoldan test etmek için
-        console.log('Manifesto sitesi yüklendi!');
-        console.log('Düzenleme moduna girmek için şifre: 123');
-        console.log('Manifesto verisi localStorage\'da saklanıyor.');
-    </script>
+        closeNewItemModal();
+        renderTree();
+    }
+    
+    // 🚀 Sayfa Yüklendiğinde
+    window.onload = function() {
+        renderTree();
+        console.log('✅ Site hazır!');
+        console.log('📝 Düzenleme modunu açarak içerik ekleyip düzenleyebilirsiniz.');
+    };
+</script>
 </body>
 </html>
