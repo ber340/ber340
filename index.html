@@ -255,7 +255,7 @@
         let items = [];
         let editMode = false;
         let editingId = null;
-        let viewingId = null;
+        let openItems = new Set(); // Açık olan öğelerin ID'leri
         let isAuthenticated = false;
         
         // LocalStorage'dan veri yükle
