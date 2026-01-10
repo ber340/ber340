@@ -306,18 +306,20 @@
         var isAuthenticated = false;
         
         function loadData() {
-            var saved = localStorage.getItem('ber340Data');
-            if (saved) {
-                try {
-                    items = JSON.parse(saved);
-                } catch (e) {
-                    console.error('Veri yüklenemedi:', e);
-                    items = defaultData.slice();
-                }
-            } else {
-                items = defaultData.slice();
-            }
+    var saved = localStorage.getItem('ber340Data');
+    if (saved) {
+        try {
+            items = JSON.parse(saved);
+        } catch (e) {
+            console.error('Veri yüklenemedi:', e);
+            items = defaultData.slice();
+            saveData(); // defaultData'yı kaydet
         }
+    } else {
+        items = defaultData.slice();
+        saveData(); // defaultData'yı kaydet
+    }
+}
         
         function saveData() {
             try {
