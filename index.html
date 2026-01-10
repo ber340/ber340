@@ -379,9 +379,14 @@
             const container = document.getElementById('treeView');
             container.innerHTML = '';
             
-            function renderItem(item, parentElement) {
+            function renderItem(item, parentElement, isLastChild = false) {
+                const wrapper = document.createElement('div');
+                
                 const branchDiv = document.createElement('div');
                 branchDiv.className = 'branch';
+                if (isLastChild) {
+                    branchDiv.classList.add('last-child');
+                }
                 
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'branch-title';
@@ -412,7 +417,7 @@
                     branchDiv.appendChild(addChildBtn);
                 }
                 
-                parentElement.appendChild(branchDiv);
+                wrapper.appendChild(branchDiv);
                 
                 if (viewingId === item.id) {
                     const contentDiv = document.createElement('div');
@@ -424,15 +429,29 @@
                     contentBody.innerHTML = formatContent(item);
                     contentDiv.appendChild(contentBody);
                     
-                    parentElement.appendChild(contentDiv);
+                    wrapper.appendChild(contentDiv);
                 }
                 
+                parentElement.appendChild(wrapper);
+                
+                // Alt başlıkları render et
                 if (item.children && item.children.length > 0) {
-                    item.children.forEach(child => renderItem(child, parentElement));
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.style.marginLeft = '0';
+                    
+                    item.children.forEach((child, index) => {
+                        const isLast = index === item.children.length - 1;
+                        renderItem(child, childrenContainer, isLast);
+                    });
+                    
+                    wrapper.appendChild(childrenContainer);
                 }
             }
             
-            items.forEach(item => renderItem(item, container));
+            items.forEach((item, index) => {
+                const isLast = index === items.length - 1;
+                renderItem(item, container, isLast);
+            });
         }
         
         function formatContent(item) {
@@ -444,7 +463,12 @@
                 item.links.forEach(link => {
                     const trimmed = link.trim();
                     if (trimmed) {
-                        content += `<a href="${trimmed}" target="_blank" rel="noopener noreferrer">${trimmed}</a><br>`;
+                        // Http yoksa ekle
+                        let url = trimmed;
+                        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                            url = 'https://' + url;
+                        }
+                        content += `<a href="${url}" target="_blank" rel="noopener noreferrer">${trimmed}</a><br>`;
                     }
                 });
             }
