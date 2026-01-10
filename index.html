@@ -19,7 +19,6 @@
             padding: 0 20px;
         }
         
-        /* Ağaç çizgileri */
         .tree {
             position: relative;
             margin: 20px 0;
@@ -31,7 +30,6 @@
             margin: 8px 0;
         }
         
-        /* Dikey çizgi */
         .branch::before {
             content: '';
             position: absolute;
@@ -42,7 +40,6 @@
             background: black;
         }
         
-        /* Yatay çizgi */
         .branch::after {
             content: '';
             position: absolute;
@@ -53,25 +50,22 @@
             background: black;
         }
         
-        /* Son öğe için dikey çizgiyi kısalt */
         .branch:last-child::before {
             height: 13px;
         }
         
-        /* Alt başlıklar için girinti */
         .branch .branch {
             margin-left: 30px;
         }
         
-        /* Başlık - HOVER EFEKTİ YOK */
         .branch-title {
             cursor: pointer;
             display: inline-block;
             padding: 3px 5px;
             margin-left: 5px;
+            word-wrap: break-word;
         }
         
-        /* İçerik - kutulu değil */
         .content-view {
             margin: 10px 0 20px 40px;
             padding: 0;
@@ -81,14 +75,16 @@
         .content-body {
             white-space: pre-wrap;
             line-height: 1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .content-body a {
             color: black;
             text-decoration: underline;
+            word-break: break-all;
         }
         
-        /* Kontroller - HOVER EFEKTİ YOK */
         .edit-controls {
             text-align: right;
             margin-bottom: 30px;
@@ -102,7 +98,12 @@
             font-size: 14px;
         }
         
-        /* Modal */
+        .small-btn {
+            font-size: 12px;
+            padding: 2px 8px;
+            margin-left: 10px;
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -113,6 +114,12 @@
             background: white;
             z-index: 1000;
             padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         .modal input, .modal textarea {
@@ -122,36 +129,69 @@
             border: 1px solid black;
             font-family: monospace;
             font-size: 14px;
+            box-sizing: border-box;
         }
         
         .modal textarea {
             height: 200px;
+            resize: vertical;
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
         }
         
         @media (max-width: 600px) {
-            .container { padding: 0 10px; }
-            .branch { padding-left: 15px; }
-            .branch::after { width: 15px; }
-            .branch .branch { margin-left: 20px; }
+            body {
+                font-size: 14px;
+            }
+            .container { 
+                padding: 0 10px;
+                margin: 10px auto;
+            }
+            .branch { 
+                padding-left: 15px;
+            }
+            .branch::after { 
+                width: 15px;
+            }
+            .branch .branch { 
+                margin-left: 20px;
+            }
+            .edit-btn {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .small-btn {
+                font-size: 10px;
+                padding: 2px 6px;
+                margin-left: 5px;
+            }
+            .content-view {
+                margin: 10px 0 20px 20px;
+            }
+            .modal {
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="edit-controls">
-            <button class="edit-btn">Düzenle</button>
+            <button class="edit-btn" id="toggleEditBtn">Düzenle</button>
             <button class="edit-btn" id="addBtn" style="display:none">+</button>
         </div>
         
         <div class="tree" id="treeView"></div>
         
         <div class="modal" id="editModal">
-            <div style="max-width: 600px; margin: 0 auto;">
+            <div class="modal-content">
                 <input type="text" id="editTitle" placeholder="Başlık">
                 <textarea id="editContent" placeholder="İçerik"></textarea>
                 <textarea id="editLinks" placeholder="Linkler (her satıra bir link)" style="height: 100px"></textarea>
                 
-                <div style="margin-top: 20px;">
+                <div class="modal-buttons">
                     <button class="edit-btn" id="saveBtn">Kaydet</button>
                     <button class="edit-btn" id="cancelBtn">İptal</button>
                     <button class="edit-btn" id="deleteBtn">Sil</button>
@@ -161,14 +201,38 @@
     </div>
 
     <script>
-        let items = JSON.parse(localStorage.getItem('ber340Data')) || [];
+        let items = [];
         let editMode = false;
         let editingId = null;
         let viewingId = null;
         
-        // Event listener'ları bağla
+        // LocalStorage'dan veri yükle
+        function loadData() {
+            const saved = localStorage.getItem('ber340Data');
+            if (saved) {
+                try {
+                    items = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Veri yüklenemedi:', e);
+                    items = [];
+                }
+            }
+        }
+        
+        // LocalStorage'a veri kaydet
+        function saveData() {
+            try {
+                localStorage.setItem('ber340Data', JSON.stringify(items));
+            } catch (e) {
+                console.error('Veri kaydedilemedi:', e);
+            }
+        }
+        
+        // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('.edit-controls .edit-btn').addEventListener('click', toggleEdit);
+            loadData();
+            
+            document.getElementById('toggleEditBtn').addEventListener('click', toggleEdit);
             document.getElementById('addBtn').addEventListener('click', addItem);
             document.getElementById('saveBtn').addEventListener('click', saveItem);
             document.getElementById('cancelBtn').addEventListener('click', closeModal);
@@ -178,61 +242,63 @@
         });
         
         function renderTree() {
-            let html = '';
+            const container = document.getElementById('treeView');
+            container.innerHTML = '';
             
-            function renderItem(item, level = 0) {
-                const isOpen = viewingId === item.id;
+            function renderItem(item, parentElement) {
+                const branchDiv = document.createElement('div');
+                branchDiv.className = 'branch';
                 
-                html += `<div class="branch">`;
-                html += `<span class="branch-title">${item.title}</span>`;
-                
-                if (editMode) {
-                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px; margin-left:10px;">D</button>`;
-                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px;">A</button>`;
-                }
-                
-                html += `</div>`;
-                
-                if (isOpen) {
-                    html += `<div class="content-view" style="display:block">`;
-                    html += `<div class="content-body">${formatContent(item)}</div>`;
-                    html += `</div>`;
-                }
-                
-                item.children.forEach(child => renderItem(child, level + 1));
-            }
-            
-            items.forEach(item => renderItem(item));
-            document.getElementById('treeView').innerHTML = html;
-            
-            // Buton event'lerini yeniden bağla
-            document.querySelectorAll('.branch-title').forEach((title, index) => {
-                title.addEventListener('click', function() {
-                    const item = items[index];
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'branch-title';
+                titleSpan.textContent = item.title;
+                titleSpan.setAttribute('data-id', item.id);
+                titleSpan.addEventListener('click', function() {
                     viewItem(item.id);
                 });
-            });
-            
-            document.querySelectorAll('.edit-btn[style*="font-size:12px"]').forEach((btn, index) => {
-                const btnIndex = Math.floor(index / 2);
-                if (index % 2 === 0) {
-                    // Düzenle butonu
-                    btn.addEventListener('click', function(e) {
+                branchDiv.appendChild(titleSpan);
+                
+                if (editMode) {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'edit-btn small-btn';
+                    editBtn.textContent = 'D';
+                    editBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        const item = items[btnIndex];
                         editItem(item.id);
                     });
-                } else {
-                    // Alt başlık ekle butonu
-                    btn.addEventListener('click', function(e) {
+                    branchDiv.appendChild(editBtn);
+                    
+                    const addChildBtn = document.createElement('button');
+                    addChildBtn.className = 'edit-btn small-btn';
+                    addChildBtn.textContent = 'A';
+                    addChildBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        const item = items[btnIndex];
                         addChild(item.id);
                     });
+                    branchDiv.appendChild(addChildBtn);
                 }
-            });
+                
+                parentElement.appendChild(branchDiv);
+                
+                if (viewingId === item.id) {
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'content-view';
+                    contentDiv.style.display = 'block';
+                    
+                    const contentBody = document.createElement('div');
+                    contentBody.className = 'content-body';
+                    contentBody.innerHTML = formatContent(item);
+                    contentDiv.appendChild(contentBody);
+                    
+                    parentElement.appendChild(contentDiv);
+                }
+                
+                if (item.children && item.children.length > 0) {
+                    item.children.forEach(child => renderItem(child, parentElement));
+                }
+            }
             
-            localStorage.setItem('ber340Data', JSON.stringify(items));
+            items.forEach(item => renderItem(item, container));
         }
         
         function formatContent(item) {
@@ -242,8 +308,9 @@
             if (item.links && item.links.length > 0) {
                 content += '<br><br>';
                 item.links.forEach(link => {
-                    if (link.trim()) {
-                        content += `<a href="${link.trim()}" target="_blank" rel="noopener noreferrer">${link.trim()}</a><br>`;
+                    const trimmed = link.trim();
+                    if (trimmed) {
+                        content += `<a href="${trimmed}" target="_blank" rel="noopener noreferrer">${trimmed}</a><br>`;
                     }
                 });
             }
@@ -262,8 +329,11 @@
         
         function toggleEdit() {
             editMode = !editMode;
-            document.getElementById('addBtn').style.display = editMode ? 'inline-block' : 'none';
-            document.querySelector('.edit-controls .edit-btn').textContent = editMode ? 'Kapat' : 'Düzenle';
+            const addBtn = document.getElementById('addBtn');
+            const toggleBtn = document.getElementById('toggleEditBtn');
+            
+            addBtn.style.display = editMode ? 'inline-block' : 'none';
+            toggleBtn.textContent = editMode ? 'Kapat' : 'Düzenle';
             renderTree();
         }
         
@@ -273,9 +343,9 @@
             
             editingId = id;
             document.getElementById('editTitle').value = item.title;
-            document.getElementById('editContent').value = item.content;
+            document.getElementById('editContent').value = item.content || '';
             document.getElementById('editLinks').value = item.links ? item.links.join('\n') : '';
-            document.getElementById('deleteBtn').style.display = 'block';
+            document.getElementById('deleteBtn').style.display = 'inline-block';
             document.getElementById('editModal').style.display = 'block';
         }
         
@@ -296,6 +366,9 @@
             if (!title) return;
             
             const newId = Date.now();
+            if (!parent.children) {
+                parent.children = [];
+            }
             parent.children.push({
                 id: newId,
                 title: title,
@@ -304,6 +377,7 @@
                 children: []
             });
             
+            saveData();
             renderTree();
         }
         
@@ -312,15 +386,20 @@
             const content = document.getElementById('editContent').value;
             const linksText = document.getElementById('editLinks').value;
             
-            if (!title) return alert('Başlık gerekli');
+            if (!title) {
+                alert('Başlık gerekli');
+                return;
+            }
             
             const links = linksText.split('\n').filter(link => link.trim());
             
             if (editingId) {
                 const item = findItem(editingId);
-                item.title = title;
-                item.content = content;
-                item.links = links;
+                if (item) {
+                    item.title = title;
+                    item.content = content;
+                    item.links = links;
+                }
             } else {
                 const newId = Date.now();
                 items.push({
@@ -332,6 +411,7 @@
                 });
             }
             
+            saveData();
             closeModal();
             renderTree();
         }
@@ -345,12 +425,15 @@
                         arr.splice(i, 1);
                         return true;
                     }
-                    if (removeItem(arr[i].children, id)) return true;
+                    if (arr[i].children && removeItem(arr[i].children, id)) {
+                        return true;
+                    }
                 }
                 return false;
             }
             
             removeItem(items, editingId);
+            saveData();
             closeModal();
             renderTree();
         }
@@ -359,8 +442,10 @@
             function search(arr) {
                 for (const item of arr) {
                     if (item.id === id) return item;
-                    const found = search(item.children);
-                    if (found) return found;
+                    if (item.children) {
+                        const found = search(item.children);
+                        if (found) return found;
+                    }
                 }
                 return null;
             }
