@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ber340</title>
     <style>
-        body, .container, .tree, .branch-title, .content-view {
+        body, .container, .tree, .content-view, .branch, .edit-btn {
             margin: 0;
             padding: 0;
-            background-color: white;
+            background: white;
             color: black;
             font-family: monospace;
         }
@@ -18,48 +18,40 @@
             padding: 0 20px;
         }
         
-        /* Ağaç yapısı */
         .tree {
             font-size: 16px;
             line-height: 1.4;
         }
         
         .branch {
-            margin: 5px 0;
+            margin: 8px 0;
         }
         
         .branch-title {
             cursor: pointer;
-            padding: 8px 5px;
-            display: block;
-            text-decoration: none;
-            color: black;
+            display: inline-block;
+            padding: 5px 0;
         }
         
         .branch-title:hover {
-            background-color: #f5f5f5;
+            background: #f5f5f5;
         }
         
-        /* Alt başlıklar */
         .sub-branch {
             margin-left: 30px;
-            border-left: 1px solid #ddd;
             padding-left: 15px;
+            border-left: 1px solid #ddd;
         }
         
-        /* İçerik görünümü */
         .content-view {
-            margin: 15px 0 30px 15px;
-            padding: 20px;
+            margin: 15px 0 25px 15px;
+            padding: 15px;
             border: 1px solid #ddd;
-            background: white;
             display: none;
         }
         
         .content-body {
             white-space: pre-wrap;
-            font-family: monospace;
-            font-size: 14px;
             line-height: 1.6;
         }
         
@@ -68,27 +60,19 @@
             text-decoration: underline;
         }
         
-        /* Düzenleme kontrolleri */
         .edit-controls {
             text-align: right;
             margin-bottom: 20px;
         }
         
         .edit-btn {
-            font-family: monospace;
             font-size: 13px;
-            background: white;
             border: 1px solid black;
             padding: 5px 10px;
             cursor: pointer;
             margin-left: 5px;
         }
         
-        .edit-btn:hover {
-            background: #f5f5f5;
-        }
-        
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -101,17 +85,11 @@
             padding: 20px;
         }
         
-        .modal-content {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
         .modal input, .modal textarea {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ddd;
-            font-family: monospace;
             font-size: 14px;
         }
         
@@ -119,42 +97,27 @@
             height: 200px;
         }
         
-        /* Mobil */
         @media (max-width: 600px) {
-            .container {
-                padding: 0 10px;
-            }
-            
-            .tree {
-                font-size: 14px;
-            }
-            
-            .sub-branch {
-                margin-left: 20px;
-            }
+            .container { padding: 0 10px; }
+            .tree { font-size: 14px; }
+            .sub-branch { margin-left: 20px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Başlık -->
-        <div style="margin-bottom: 30px; font-size: 24px;">ber340</div>
-        
-        <!-- Kontroller -->
         <div class="edit-controls">
             <button class="edit-btn" onclick="toggleEdit()">Düzenle</button>
-            <button class="edit-btn" id="addBtn" style="display:none" onclick="addItem()">+ Yeni</button>
+            <button class="edit-btn" id="addBtn" style="display:none" onclick="addItem()">+</button>
         </div>
         
-        <!-- Ağaç yapısı -->
         <div class="tree" id="treeView"></div>
         
-        <!-- Düzenleme modalı -->
         <div class="modal" id="editModal">
-            <div class="modal-content">
+            <div style="max-width: 600px; margin: 0 auto;">
                 <input type="text" id="editTitle" placeholder="Başlık">
                 <textarea id="editContent" placeholder="İçerik"></textarea>
-                <input type="text" id="editLink" placeholder="Link (isteğe bağlı)">
+                <textarea id="editLinks" placeholder="Linkler (her satıra bir link)" style="height: 100px"></textarea>
                 
                 <div style="margin-top: 20px;">
                     <button class="edit-btn" onclick="saveItem()">Kaydet</button>
@@ -166,17 +129,11 @@
     </div>
 
     <script>
-        // Veriler
-        let items = JSON.parse(localStorage.getItem('ber340Data')) || [
-            { id: 1, title: "baslik-1.html", content: "İlk başlık içeriği", link: "", children: [] },
-            { id: 2, title: "baslik-2.html", content: "İkinci başlık içeriği", link: "", children: [] }
-        ];
-        
+        let items = JSON.parse(localStorage.getItem('ber340Data')) || [];
         let editMode = false;
         let editingId = null;
         let viewingId = null;
         
-        // Ağaç yapısını oluştur
         function renderTree() {
             let html = '';
             
@@ -185,12 +142,12 @@
                 const isOpen = viewingId === item.id;
                 
                 html += `<div class="branch" style="margin-left: ${indent}px">`;
-                html += `<a class="branch-title" onclick="viewItem(${item.id})">${item.title}</a>`;
+                html += `<span class="branch-title" onclick="viewItem(${item.id})">${item.title}</span>`;
                 
                 if (editMode) {
-                    html += `<button class="edit-btn" style="font-size:11px; padding:3px 8px;" onclick="editItem(${item.id})">düzenle</button>`;
+                    html += `<button class="edit-btn" style="font-size:11px; padding:3px 8px;" onclick="editItem(${item.id})">d</button>`;
                     if (level === 0) {
-                        html += `<button class="edit-btn" style="font-size:11px; padding:3px 8px;" onclick="addChildItem(${item.id})">+ alt</button>`;
+                        html += `<button class="edit-btn" style="font-size:11px; padding:3px 8px;" onclick="addChild(${item.id})">a</button>`;
                     }
                 }
                 
@@ -210,17 +167,22 @@
             localStorage.setItem('ber340Data', JSON.stringify(items));
         }
         
-        // İçeriği formatla
         function formatContent(item) {
             let content = item.content || '';
             content = content.replace(/\n/g, '<br>');
-            if (item.link && item.link.trim() !== '') {
-                content += `<br><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+            
+            if (item.links && item.links.length > 0) {
+                content += '<br><br>';
+                item.links.forEach(link => {
+                    if (link.trim()) {
+                        content += `<a href="${link.trim()}" target="_blank" rel="noopener noreferrer">${link.trim()}</a><br>`;
+                    }
+                });
             }
+            
             return content;
         }
         
-        // İçeriği görüntüle
         function viewItem(id) {
             if (viewingId === id) {
                 viewingId = null;
@@ -230,15 +192,13 @@
             renderTree();
         }
         
-        // Düzenleme modu
         function toggleEdit() {
             editMode = !editMode;
             document.getElementById('addBtn').style.display = editMode ? 'inline-block' : 'none';
-            document.querySelector('.edit-controls .edit-btn').textContent = editMode ? 'Görüntüle' : 'Düzenle';
+            document.querySelector('.edit-controls .edit-btn').textContent = editMode ? 'Kapat' : 'Düzenle';
             renderTree();
         }
         
-        // İçeriği düzenle
         function editItem(id) {
             const item = findItem(id);
             if (!item) return;
@@ -246,66 +206,60 @@
             editingId = id;
             document.getElementById('editTitle').value = item.title;
             document.getElementById('editContent').value = item.content;
-            document.getElementById('editLink').value = item.link || '';
+            document.getElementById('editLinks').value = item.links ? item.links.join('\n') : '';
             document.getElementById('deleteBtn').style.display = 'block';
             document.getElementById('editModal').style.display = 'block';
         }
         
-        // Yeni öğe ekle
         function addItem() {
             editingId = null;
             document.getElementById('editTitle').value = '';
             document.getElementById('editContent').value = '';
-            document.getElementById('editLink').value = '';
+            document.getElementById('editLinks').value = '';
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('editModal').style.display = 'block';
         }
         
-        // Alt öğe ekle
-        function addChildItem(parentId) {
+        function addChild(parentId) {
             const parent = findItem(parentId);
             if (!parent) return;
             
-            const title = prompt('Alt başlık adı:');
+            const title = prompt('Alt başlık:');
             if (!title) return;
-            
-            const content = prompt('İçerik:') || '';
-            const link = prompt('Link (isteğe bağlı):') || '';
             
             const newId = Date.now();
             parent.children.push({
                 id: newId,
-                title: title.endsWith('.html') ? title : title + '.html',
-                content: content,
-                link: link,
+                title: title,
+                content: '',
+                links: [],
                 children: []
             });
             
             renderTree();
         }
         
-        // Kaydet
         function saveItem() {
             const title = document.getElementById('editTitle').value.trim();
             const content = document.getElementById('editContent').value;
-            const link = document.getElementById('editLink').value.trim();
+            const linksText = document.getElementById('editLinks').value;
             
             if (!title) return alert('Başlık gerekli');
             
+            const links = linksText.split('\n').filter(link => link.trim());
+            
             if (editingId) {
-                // Düzenle
                 const item = findItem(editingId);
-                item.title = title.endsWith('.html') ? title : title + '.html';
+                item.title = title;
                 item.content = content;
-                item.link = link;
+                item.links = links;
             } else {
-                // Yeni ekle
                 const newId = Date.now();
                 items.push({
                     id: newId,
-                    title: title.endsWith('.html') ? title : title + '.html',
+                    title: title,
                     content: content,
-                    link: link,
+                    links: links,
                     children: []
                 });
             }
@@ -314,7 +268,6 @@
             renderTree();
         }
         
-        // Sil
         function deleteItem() {
             if (!confirm('Silinsin mi?')) return;
             
@@ -334,7 +287,6 @@
             renderTree();
         }
         
-        // Öğe bul
         function findItem(id) {
             function search(arr) {
                 for (const item of arr) {
@@ -347,13 +299,11 @@
             return search(items);
         }
         
-        // Modal kapat
         function closeModal() {
             document.getElementById('editModal').style.display = 'none';
             editingId = null;
         }
         
-        // Başlangıç
         renderTree();
     </script>
 </body>
