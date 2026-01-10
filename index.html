@@ -88,6 +88,7 @@
         .edit-controls {
             text-align: right;
             margin-bottom: 30px;
+            display: none;
         }
         
         .edit-btn {
@@ -141,6 +142,29 @@
             margin-top: 20px;
         }
         
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid black;
+            padding: 30px;
+            z-index: 2000;
+            min-width: 300px;
+        }
+        
+        .auth-modal input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid black;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
         @media (max-width: 600px) {
             body {
                 font-size: 14px;
@@ -173,14 +197,21 @@
             .modal {
                 padding: 10px;
             }
+            .auth-modal {
+                width: 90%;
+                min-width: auto;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="edit-controls">
+        <div class="edit-controls" id="editControls">
+            <button class="edit-btn" id="exportBtn">JSON İndir</button>
+            <button class="edit-btn" id="importBtn">JSON Yükle</button>
             <button class="edit-btn" id="toggleEditBtn">Düzenle</button>
             <button class="edit-btn" id="addBtn" style="display:none">+</button>
+            <input type="file" id="fileInput" accept=".json" style="display:none">
         </div>
         
         <div class="tree" id="treeView"></div>
@@ -198,13 +229,28 @@
                 </div>
             </div>
         </div>
+        
+        <div class="auth-modal" id="authModal">
+            <div style="text-align: center; margin-bottom: 20px; font-size: 18px;">
+                kedi
+            </div>
+            <input type="text" id="authInput" placeholder="...">
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="edit-btn" id="authSubmit">Giriş</button>
+                <button class="edit-btn" id="authCancel">İptal</button>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Veriler - Başlangıç değeri veya localStorage'dan yüklenecek
+        const defaultData = [];
+        
         let items = [];
         let editMode = false;
         let editingId = null;
         let viewingId = null;
+        let isAuthenticated = false;
         
         // LocalStorage'dan veri yükle
         function loadData() {
@@ -214,8 +260,10 @@
                     items = JSON.parse(saved);
                 } catch (e) {
                     console.error('Veri yüklenemedi:', e);
-                    items = [];
+                    items = [...defaultData];
                 }
+            } else {
+                items = [...defaultData];
             }
         }
         
@@ -228,9 +276,89 @@
             }
         }
         
+        // Şifre kontrolü
+        function checkAuth() {
+            const input = document.getElementById('authInput').value;
+            // ŞİFRE BURASI: "köpek" yerine istediğini yaz
+            if (input === 'köpek') {
+                isAuthenticated = true;
+                document.getElementById('authModal').style.display = 'none';
+                document.getElementById('editControls').style.display = 'block';
+                document.getElementById('authInput').value = '';
+                alert('Giriş başarılı!');
+            } else {
+                alert('Hatalı giriş!');
+                document.getElementById('authInput').value = '';
+            }
+        }
+        
+        // JSON Export
+        function exportJSON() {
+            const dataStr = JSON.stringify(items, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ber340-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // JSON Import
+        function importJSON(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    items = importedData;
+                    saveData();
+                    renderTree();
+                    alert('JSON başarıyla yüklendi!');
+                } catch (err) {
+                    alert('JSON yüklenirken hata oluştu!');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
         // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
+            
+            // Ctrl+Shift+E kombinasyonu
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+                    e.preventDefault();
+                    if (!isAuthenticated) {
+                        document.getElementById('authModal').style.display = 'block';
+                        document.getElementById('authInput').focus();
+                    }
+                }
+            });
+            
+            document.getElementById('authSubmit').addEventListener('click', checkAuth);
+            document.getElementById('authCancel').addEventListener('click', function() {
+                document.getElementById('authModal').style.display = 'none';
+                document.getElementById('authInput').value = '';
+            });
+            
+            document.getElementById('authInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkAuth();
+                }
+            });
+            
+            document.getElementById('exportBtn').addEventListener('click', exportJSON);
+            document.getElementById('importBtn').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
+            });
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    importJSON(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
             
             document.getElementById('toggleEditBtn').addEventListener('click', toggleEdit);
             document.getElementById('addBtn').addEventListener('click', addItem);
@@ -258,7 +386,7 @@
                 });
                 branchDiv.appendChild(titleSpan);
                 
-                if (editMode) {
+                if (editMode && isAuthenticated) {
                     const editBtn = document.createElement('button');
                     editBtn.className = 'edit-btn small-btn';
                     editBtn.textContent = 'D';
@@ -328,6 +456,8 @@
         }
         
         function toggleEdit() {
+            if (!isAuthenticated) return;
+            
             editMode = !editMode;
             const addBtn = document.getElementById('addBtn');
             const toggleBtn = document.getElementById('toggleEditBtn');
@@ -338,6 +468,8 @@
         }
         
         function editItem(id) {
+            if (!isAuthenticated) return;
+            
             const item = findItem(id);
             if (!item) return;
             
@@ -350,6 +482,8 @@
         }
         
         function addItem() {
+            if (!isAuthenticated) return;
+            
             editingId = null;
             document.getElementById('editTitle').value = '';
             document.getElementById('editContent').value = '';
@@ -359,6 +493,8 @@
         }
         
         function addChild(parentId) {
+            if (!isAuthenticated) return;
+            
             const parent = findItem(parentId);
             if (!parent) return;
             
@@ -382,6 +518,8 @@
         }
         
         function saveItem() {
+            if (!isAuthenticated) return;
+            
             const title = document.getElementById('editTitle').value.trim();
             const content = document.getElementById('editContent').value;
             const linksText = document.getElementById('editLinks').value;
@@ -417,6 +555,7 @@
         }
         
         function deleteItem() {
+            if (!isAuthenticated) return;
             if (!confirm('Silinsin mi?')) return;
             
             function removeItem(arr, id) {
