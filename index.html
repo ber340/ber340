@@ -4,12 +4,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ber340</title>
     <style>
-        body, .container, .tree, .content-view, .branch, .edit-btn {
+        body, .container, .tree, .branch, .edit-btn {
             margin: 0;
             padding: 0;
             background: white;
             color: black;
             font-family: monospace;
+            font-size: 16px;
         }
         
         .container {
@@ -18,35 +19,66 @@
             padding: 0 20px;
         }
         
+        /* Ağaç çizgileri */
         .tree {
-            font-size: 16px;
-            line-height: 1.4;
+            position: relative;
+            margin: 20px 0;
         }
         
         .branch {
+            position: relative;
+            padding-left: 20px;
             margin: 8px 0;
         }
         
+        /* Dikey çizgi */
+        .branch::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: black;
+        }
+        
+        /* Yatay çizgi */
+        .branch::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 20px;
+            height: 1px;
+            background: black;
+        }
+        
+        /* Son öğe için dikey çizgiyi kısalt */
+        .branch:last-child::before {
+            height: 13px;
+        }
+        
+        /* Alt başlıklar için girinti */
+        .branch .branch {
+            margin-left: 30px;
+        }
+        
+        /* Başlık */
         .branch-title {
             cursor: pointer;
             display: inline-block;
-            padding: 5px 0;
+            padding: 3px 5px;
+            margin-left: 5px;
         }
         
         .branch-title:hover {
             background: #f5f5f5;
         }
         
-        .sub-branch {
-            margin-left: 30px;
-            padding-left: 15px;
-            border-left: 1px solid #ddd;
-        }
-        
+        /* İçerik - kutulu değil */
         .content-view {
-            margin: 15px 0 25px 15px;
-            padding: 15px;
-            border: 1px solid #ddd;
+            margin: 10px 0 20px 40px;
+            padding: 0;
             display: none;
         }
         
@@ -60,19 +92,21 @@
             text-decoration: underline;
         }
         
+        /* Kontroller */
         .edit-controls {
             text-align: right;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         
         .edit-btn {
-            font-size: 13px;
             border: 1px solid black;
-            padding: 5px 10px;
+            padding: 5px 15px;
             cursor: pointer;
-            margin-left: 5px;
+            background: white;
+            font-size: 14px;
         }
         
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -89,7 +123,8 @@
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: 1px solid #ddd;
+            border: 1px solid black;
+            font-family: monospace;
             font-size: 14px;
         }
         
@@ -99,8 +134,9 @@
         
         @media (max-width: 600px) {
             .container { padding: 0 10px; }
-            .tree { font-size: 14px; }
-            .sub-branch { margin-left: 20px; }
+            .branch { padding-left: 15px; }
+            .branch::after { width: 15px; }
+            .branch .branch { margin-left: 20px; }
         }
     </style>
 </head>
@@ -138,23 +174,20 @@
             let html = '';
             
             function renderItem(item, level = 0) {
-                const indent = level * 30;
                 const isOpen = viewingId === item.id;
                 
-                html += `<div class="branch" style="margin-left: ${indent}px">`;
+                html += `<div class="branch">`;
                 html += `<span class="branch-title" onclick="viewItem(${item.id})">${item.title}</span>`;
                 
                 if (editMode) {
-                    html += `<button class="edit-btn" style="font-size:11px; padding:3px 8px;" onclick="editItem(${item.id})">d</button>`;
-                    if (level === 0) {
-                        html += `<button class="edit-btn" style="font-size:11px; padding:3px 8px;" onclick="addChild(${item.id})">a</button>`;
-                    }
+                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px; margin-left:10px;" onclick="editItem(${item.id})">D</button>`;
+                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px;" onclick="addChild(${item.id})">A</button>`;
                 }
                 
                 html += `</div>`;
                 
                 if (isOpen) {
-                    html += `<div class="content-view" style="display:block; margin-left: ${indent + 15}px">`;
+                    html += `<div class="content-view" style="display:block">`;
                     html += `<div class="content-body">${formatContent(item)}</div>`;
                     html += `</div>`;
                 }
