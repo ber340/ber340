@@ -282,10 +282,10 @@
             }
         }
         
-        // Şifre kontrolü
+        // Giriş kontrolü
         function checkAuth() {
             const input = document.getElementById('authInput').value;
-            // ŞİFRE BURASI: "köpek" yerine istediğini yaz
+            // BURASI: "köpek" yerine başka kelime yazabilirsin
             if (input === 'köpek') {
                 isAuthenticated = true;
                 document.getElementById('authModal').style.display = 'none';
@@ -476,7 +476,7 @@
             return content;
         }
         
-        function viewItem(id) {
+        function toggleItemView(id) {
             if (viewingId === id) {
                 viewingId = null;
             } else {
