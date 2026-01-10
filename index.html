@@ -251,83 +251,60 @@
 
     <script>
         var defaultData = [
-  {
-    "id": 1,
-    "title": "araçlarım",
-    "content": "",
-    "links": [
-      "https://ber340.github.io/asgarihesaplama/",
-      "https://ber340.github.io/sosyoekonomik/"
-    ],
-    "children": []
-  },
-  {
-    "id": 1768052674823,
-    "title": "arşivler",
-    "content": "",
-    "links": [],
-    "children": [
-      {
-        "id": 1768053050965,
-        "title": "müzik arşivi",
-        "content": "",
-        "links": [
-          "lucida.to",
-          "http://tidal.squid.wtf",
-          "https://eu.doubledouble.top",
-          "https://dabmusic.xyz",
-          "https://amz.squid.wtf",
-          "https://qobuz.squid.wtf",
-          "https://khinsider.squid.wtf",
-          "https://music.binimum.org",
-          "https://tidal.qqdl.site",
-          "https://flacmania.biz/"
-        ],
-        "children": []
-      },
-      {
-        "id": 1768053470178,
-        "title": "kitap arşivi",
-        "content": "",
-        "links": [
-          "https://annas-archive.se/",
-          "https://z-lib.gd/",
-          "https://welib.org/"
-        ],
-        "children": []
-      }
-    ]
-  }
-];
-        var items = [];
+            {
+                "id": 1,
+                "title": "araçlarım",
+                "content": "",
+                "links": [
+                    "https://ber340.github.io/asgarihesaplama/",
+                    "https://ber340.github.io/sosyoekonomik/"
+                ],
+                "children": []
+            },
+            {
+                "id": 1768052674823,
+                "title": "arşivler",
+                "content": "",
+                "links": [],
+                "children": [
+                    {
+                        "id": 1768053050965,
+                        "title": "müzik arşivi",
+                        "content": "",
+                        "links": [
+                            "lucida.to",
+                            "http://tidal.squid.wtf",
+                            "https://eu.doubledouble.top",
+                            "https://dabmusic.xyz",
+                            "https://amz.squid.wtf",
+                            "https://qobuz.squid.wtf",
+                            "https://khinsider.squid.wtf",
+                            "https://music.binimum.org",
+                            "https://tidal.qqdl.site",
+                            "https://flacmania.biz/"
+                        ],
+                        "children": []
+                    },
+                    {
+                        "id": 1768053470178,
+                        "title": "kitap arşivi",
+                        "content": "",
+                        "links": [
+                            "https://annas-archive.se/",
+                            "https://z-lib.gd/",
+                            "https://welib.org/"
+                        ],
+                        "children": []
+                    }
+                ]
+            }
+        ];
+
+        var items = defaultData.slice();
         var editMode = false;
         var editingId = null;
         var openItems = new Set();
         var isAuthenticated = false;
-        
-        function loadData() {
-    var saved = localStorage.getItem('ber340Data');
-    if (saved) {
-        try {
-            items = JSON.parse(saved);
-        } catch (e) {
-            console.error('Veri yüklenemedi:', e);
-            items = defaultData.slice();
-            saveData(); // defaultData'yı kaydet
-        }
-    } else {
-        items = defaultData.slice();
-        saveData(); // defaultData'yı kaydet
-    }
-}
-        
-        function saveData() {
-            try {
-                localStorage.setItem('ber340Data', JSON.stringify(items));
-            } catch (e) {
-                console.error('Veri kaydedilemedi:', e);
-            }
-        }
         
         function checkAuth() {
             var input = document.getElementById('authInput').value;
@@ -360,9 +337,8 @@
                 try {
                     var importedData = JSON.parse(e.target.result);
                     items = importedData;
-                    saveData();
                     renderTree();
-                    alert('JSON başarıyla yüklendi!');
+                    alert('JSON başarıyla yüklendi! (Sayfa yenilendiğinde eski haline dönecektir)');
                 } catch (err) {
                     alert('JSON yüklenirken hata oluştu!');
                     console.error(err);
@@ -372,8 +348,6 @@
         }
         
         document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && !e.shiftKey && (e.key === 'ş' || e.key === 'ı')) {
                     e.preventDefault();
@@ -626,7 +600,6 @@
                 children: []
             });
             
-            saveData();
             renderTree();
         }
         
@@ -664,7 +637,6 @@
                 });
             }
             
-            saveData();
             closeModal();
             renderTree();
         }
@@ -687,7 +659,6 @@
             }
             
             removeItem(items, editingId);
-            saveData();
             closeModal();
             renderTree();
         }
