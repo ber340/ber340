@@ -63,16 +63,12 @@
             margin-left: 30px;
         }
         
-        /* Başlık */
+        /* Başlık - HOVER EFEKTİ YOK */
         .branch-title {
             cursor: pointer;
             display: inline-block;
             padding: 3px 5px;
             margin-left: 5px;
-        }
-        
-        .branch-title:hover {
-            background: #f5f5f5;
         }
         
         /* İçerik - kutulu değil */
@@ -92,7 +88,7 @@
             text-decoration: underline;
         }
         
-        /* Kontroller */
+        /* Kontroller - HOVER EFEKTİ YOK */
         .edit-controls {
             text-align: right;
             margin-bottom: 30px;
@@ -143,8 +139,8 @@
 <body>
     <div class="container">
         <div class="edit-controls">
-            <button class="edit-btn" onclick="toggleEdit()">Düzenle</button>
-            <button class="edit-btn" id="addBtn" style="display:none" onclick="addItem()">+</button>
+            <button class="edit-btn">Düzenle</button>
+            <button class="edit-btn" id="addBtn" style="display:none">+</button>
         </div>
         
         <div class="tree" id="treeView"></div>
@@ -156,9 +152,9 @@
                 <textarea id="editLinks" placeholder="Linkler (her satıra bir link)" style="height: 100px"></textarea>
                 
                 <div style="margin-top: 20px;">
-                    <button class="edit-btn" onclick="saveItem()">Kaydet</button>
-                    <button class="edit-btn" onclick="closeModal()">İptal</button>
-                    <button class="edit-btn" onclick="deleteItem()" id="deleteBtn">Sil</button>
+                    <button class="edit-btn" id="saveBtn">Kaydet</button>
+                    <button class="edit-btn" id="cancelBtn">İptal</button>
+                    <button class="edit-btn" id="deleteBtn">Sil</button>
                 </div>
             </div>
         </div>
@@ -170,6 +166,17 @@
         let editingId = null;
         let viewingId = null;
         
+        // Event listener'ları bağla
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.edit-controls .edit-btn').addEventListener('click', toggleEdit);
+            document.getElementById('addBtn').addEventListener('click', addItem);
+            document.getElementById('saveBtn').addEventListener('click', saveItem);
+            document.getElementById('cancelBtn').addEventListener('click', closeModal);
+            document.getElementById('deleteBtn').addEventListener('click', deleteItem);
+            
+            renderTree();
+        });
+        
         function renderTree() {
             let html = '';
             
@@ -177,11 +184,11 @@
                 const isOpen = viewingId === item.id;
                 
                 html += `<div class="branch">`;
-                html += `<span class="branch-title" onclick="viewItem(${item.id})">${item.title}</span>`;
+                html += `<span class="branch-title">${item.title}</span>`;
                 
                 if (editMode) {
-                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px; margin-left:10px;" onclick="editItem(${item.id})">D</button>`;
-                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px;" onclick="addChild(${item.id})">A</button>`;
+                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px; margin-left:10px;">D</button>`;
+                    html += `<button class="edit-btn" style="font-size:12px; padding:2px 8px;">A</button>`;
                 }
                 
                 html += `</div>`;
@@ -197,6 +204,34 @@
             
             items.forEach(item => renderItem(item));
             document.getElementById('treeView').innerHTML = html;
+            
+            // Buton event'lerini yeniden bağla
+            document.querySelectorAll('.branch-title').forEach((title, index) => {
+                title.addEventListener('click', function() {
+                    const item = items[index];
+                    viewItem(item.id);
+                });
+            });
+            
+            document.querySelectorAll('.edit-btn[style*="font-size:12px"]').forEach((btn, index) => {
+                const btnIndex = Math.floor(index / 2);
+                if (index % 2 === 0) {
+                    // Düzenle butonu
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const item = items[btnIndex];
+                        editItem(item.id);
+                    });
+                } else {
+                    // Alt başlık ekle butonu
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const item = items[btnIndex];
+                        addChild(item.id);
+                    });
+                }
+            });
+            
             localStorage.setItem('ber340Data', JSON.stringify(items));
         }
         
@@ -336,8 +371,6 @@
             document.getElementById('editModal').style.display = 'none';
             editingId = null;
         }
-        
-        renderTree();
     </script>
 </body>
 </html>
