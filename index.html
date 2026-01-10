@@ -249,16 +249,14 @@
     </div>
 
     <script>
-        // Veriler - Başlangıç değeri veya localStorage'dan yüklenecek
         const defaultData = [];
         
         let items = [];
         let editMode = false;
         let editingId = null;
-        let openItems = new Set(); // Açık olan öğelerin ID'leri
+        let openItems = new Set();
         let isAuthenticated = false;
         
-        // LocalStorage'dan veri yükle
         function loadData() {
             const saved = localStorage.getItem('ber340Data');
             if (saved) {
@@ -273,7 +271,6 @@
             }
         }
         
-        // LocalStorage'a veri kaydet
         function saveData() {
             try {
                 localStorage.setItem('ber340Data', JSON.stringify(items));
@@ -282,10 +279,8 @@
             }
         }
         
-        // Giriş kontrolü
         function checkAuth() {
             const input = document.getElementById('authInput').value;
-            // BURASI: "köpek" yerine başka kelime yazabilirsin
             if (input === 'köpek') {
                 isAuthenticated = true;
                 document.getElementById('authModal').style.display = 'none';
@@ -298,7 +293,6 @@
             }
         }
         
-        // JSON Export
         function exportJSON() {
             const dataStr = JSON.stringify(items, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -310,7 +304,6 @@
             URL.revokeObjectURL(url);
         }
         
-        // JSON Import
         function importJSON(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -328,11 +321,9 @@
             reader.readAsText(file);
         }
         
-        // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
             
-            // Ctrl+Ş kombinasyonu
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && !e.shiftKey && e.key === 'ş') {
                     e.preventDefault();
@@ -391,9 +382,9 @@
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'branch-title';
                 titleSpan.textContent = item.title;
-                titleSpan.setAttribute('data-id', item.id);
-                titleSpan.addEventListener('click', function() {
-                    viewItem(item.id);
+                titleSpan.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleItem(item.id);
                 });
                 branchDiv.appendChild(titleSpan);
                 
@@ -419,33 +410,39 @@
                 
                 wrapper.appendChild(branchDiv);
                 
-                if (viewingId === item.id) {
-                    const contentDiv = document.createElement('div');
-                    contentDiv.className = 'content-view';
-                    contentDiv.style.display = 'block';
+                const isOpen = openItems.has(item.id);
+                
+                if (isOpen) {
+                    const hasContent = item.content || (item.links && item.links.length > 0);
+                    const hasChildren = item.children && item.children.length > 0;
                     
-                    const contentBody = document.createElement('div');
-                    contentBody.className = 'content-body';
-                    contentBody.innerHTML = formatContent(item);
-                    contentDiv.appendChild(contentBody);
+                    if (hasContent) {
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'content-view';
+                        contentDiv.style.display = 'block';
+                        
+                        const contentBody = document.createElement('div');
+                        contentBody.className = 'content-body';
+                        contentBody.innerHTML = formatContent(item);
+                        contentDiv.appendChild(contentBody);
+                        
+                        wrapper.appendChild(contentDiv);
+                    }
                     
-                    wrapper.appendChild(contentDiv);
+                    if (hasChildren) {
+                        const childrenContainer = document.createElement('div');
+                        childrenContainer.style.marginLeft = '0';
+                        
+                        item.children.forEach((child, index) => {
+                            const isLast = index === item.children.length - 1;
+                            renderItem(child, childrenContainer, isLast);
+                        });
+                        
+                        wrapper.appendChild(childrenContainer);
+                    }
                 }
                 
                 parentElement.appendChild(wrapper);
-                
-                // Alt başlıkları render et
-                if (item.children && item.children.length > 0) {
-                    const childrenContainer = document.createElement('div');
-                    childrenContainer.style.marginLeft = '0';
-                    
-                    item.children.forEach((child, index) => {
-                        const isLast = index === item.children.length - 1;
-                        renderItem(child, childrenContainer, isLast);
-                    });
-                    
-                    wrapper.appendChild(childrenContainer);
-                }
             }
             
             items.forEach((item, index) => {
@@ -465,7 +462,6 @@
                 item.links.forEach(link => {
                     const trimmed = link.trim();
                     if (trimmed) {
-                        // Http yoksa ekle
                         let url = trimmed;
                         if (!url.startsWith('http://') && !url.startsWith('https://')) {
                             url = 'https://' + url;
@@ -478,13 +474,24 @@
             return content;
         }
         
-        function toggleItemView(id) {
-            if (viewingId === id) {
-                viewingId = null;
+        function toggleItem(id) {
+            if (openItems.has(id)) {
+                openItems.delete(id);
+                closeAllChildren(id);
             } else {
-                viewingId = id;
+                openItems.add(id);
             }
             renderTree();
+        }
+        
+        function closeAllChildren(parentId) {
+            const parent = findItem(parentId);
+            if (parent && parent.children) {
+                parent.children.forEach(child => {
+                    openItems.delete(child.id);
+                    closeAllChildren(child.id);
+                });
+            }
         }
         
         function toggleEdit() {
@@ -499,7 +506,6 @@
                 addBtn.style.display = 'inline-block';
                 toggleBtn.textContent = 'Kapat';
             } else {
-                // Düzenleme kapatılınca her şeyi gizle
                 addBtn.style.display = 'none';
                 toggleBtn.textContent = 'Düzenle';
                 editControls.style.display = 'none';
