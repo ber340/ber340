@@ -4,191 +4,266 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>manifesto</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; line-height: 1.6; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
+        body, .content-container, .header, .tree, .small, .sublink_small, .sublink_small:visited {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: black;
+        }
+        body, .header, .tree {
+            font-family: monospace;
+        }
+        .content-container {
+            max-width: 800px;
+            margin-left: 1%;
+            padding: 20px;
+            word-wrap: break-word;
+        }
+        .header, .tree {
+            white-space: pre;
+            margin-top: 10px;
+            margin-left: 1%;
+        }
+        .tree {
+            line-height: 1.3;
+            font-size: 16px;
+        }
+        .small, .sublink_small {
+            font-size: 14px;
+            text-decoration: none;
+        }
+        .sublink_small {
+            color: black;
+        }
+        .sublink_small:visited {
+            color: gray;
+        }
+        .sublink_small:hover {
+            text-decoration: underline;
+        }
         
-        /* Başlıklar */
-        .tree { font-size: 18px; margin: 30px 0; }
-        .item { margin: 10px 0; }
-        .item-title { color: #64ffda; cursor: pointer; display: inline-block; padding: 5px 0; }
-        .item-title:hover { text-decoration: underline; }
-        
-        /* Düzenleme kontrolleri */
-        .edit-controls { margin-bottom: 20px; }
-        .btn { background: #1a1a1a; border: 1px solid #333; color: #e0e0e0; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-size: 14px; }
-        .btn:hover { background: #2a2a2a; border-color: #64ffda; }
+        /* Kontroller */
+        .edit-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+        }
+        .edit-btn {
+            font-family: monospace;
+            font-size: 12px;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
         
         /* İçerik görünümü */
-        .content-view { border: 1px solid #333; padding: 20px; margin: 20px 0; border-radius: 8px; display: none; }
-        .content-view h2 { color: #64ffda; margin-bottom: 15px; }
-        .content-view a { color: #64ffda; text-decoration: none; }
-        .content-view a:hover { text-decoration: underline; }
-        .close-btn { float: right; background: none; border: none; color: #888; font-size: 24px; cursor: pointer; }
-        
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: #1a1a1a; padding: 25px; width: 90%; max-width: 500px; border-radius: 8px; border: 1px solid #333; }
-        .modal input, .modal textarea { width: 100%; background: #0a0a0a; color: #e0e0e0; border: 1px solid #333; padding: 10px; margin: 10px 0; font-size: 16px; border-radius: 4px; }
-        .modal textarea { height: 150px; resize: vertical; }
+        .content-view {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .content-body a {
+            color: #0645ad;
+            text-decoration: none;
+        }
+        .content-body a:hover {
+            text-decoration: underline;
+        }
         
         /* Mobil */
         @media (max-width: 600px) {
-            body { padding: 10px; }
-            .tree { font-size: 16px; }
-            .modal-content { padding: 20px; }
+            .content-container {
+                padding: 10px;
+                margin-left: 0;
+            }
+            .tree {
+                font-size: 14px;
+                margin-left: 0;
+            }
+            .edit-controls {
+                position: static;
+                text-align: right;
+                margin-bottom: 20px;
+            }
+            .content-view {
+                width: 95%;
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Kontroller -->
-        <div class="edit-controls">
-            <button class="btn" onclick="toggleEdit()">Düzenle</button>
-            <button class="btn" id="addBtn" style="display:none" onclick="addItem()">+ Yeni</button>
-        </div>
-        
-        <!-- Ağaç yapısı -->
-        <div class="tree" id="tree"></div>
-        
-        <!-- İçerik görünümü -->
-        <div class="content-view" id="contentView">
-            <button class="close-btn" onclick="closeContent()">×</button>
-            <h2 id="contentTitle"></h2>
-            <div id="contentBody"></div>
-        </div>
-        
-        <!-- Düzenleme modalı -->
-        <div class="modal" id="modal">
-            <div class="modal-content">
-                <input type="text" id="editTitle" placeholder="Başlık">
-                <textarea id="editContent" placeholder="İçerik (HTML kullanabilirsiniz, linkler için: &lt;a href='https://ornek.com'&gt;Link&lt;/a&gt;)"></textarea>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn" onclick="saveItem()">Kaydet</button>
-                    <button class="btn" onclick="closeModal()">İptal</button>
-                    <button class="btn" onclick="deleteItem()" style="background: #4a1a1a; border-color: #ff6b6b;">Sil</button>
-                </div>
-            </div>
-        </div>
+<div class="content-container">
+    <!-- Kontroller -->
+    <div class="edit-controls">
+        <button class="edit-btn" onclick="toggleEdit()">Düzenle</button>
+        <button class="edit-btn" id="addBtn" style="display:none" onclick="addItem()">+</button>
     </div>
 
-    <script>
-        // Veriler
-        let items = JSON.parse(localStorage.getItem('manifestoItems')) || [
-            { id: 1, title: "ilk-baslik.html", content: "Bu ilk başlığın içeriği.<br><br><a href='https://example.com'>Örnek link</a>" },
-            { id: 2, title: "ikinci-baslik.html", content: "İkinci başlık içeriği.<br><br><a href='https://google.com'>Google'a git</a>" }
-        ];
+    <!-- Ağaç yapısı -->
+    <div class="tree" id="treeContent">
+        <!-- İçerik buraya eklenecek -->
+    </div>
+    
+    <!-- İçerik görünümü -->
+    <div class="content-view" id="contentView">
+        <button class="close-btn" onclick="closeContent()">×</button>
+        <div id="contentBody"></div>
+    </div>
+</div>
+
+<script>
+// 📦 Veriler
+let items = JSON.parse(localStorage.getItem('manifestoData')) || [
+    { id: 1, title: "ilk-baslik.html", content: "Bu ilk başlığın içeriği.\n\nDüzenleme modunu açarak yeni başlıklar ekleyebilirsiniz." },
+    { id: 2, title: "ornek-link.html", content: "Bu bir örnek içeriktir.\n\nBağlantı eklemek için HTML kullanın: <a href='https://example.com'>Örnek site</a>" }
+];
+
+let editMode = false;
+let viewingId = null;
+
+// 🌳 Ağaç yapısını oluştur
+function renderTree() {
+    let html = '';
+    
+    items.forEach((item, index) => {
+        // Başlık satırı
+        html += `|——<a href="#" onclick="viewContent(${item.id})" class="small">${item.title}</a>`;
         
-        let editMode = false;
-        let editingId = null;
-        let viewingId = null;
-        
-        // Render
-        function render() {
-            let html = '';
-            items.forEach(item => {
-                html += `<div class="item">
-                    <span class="item-title" onclick="viewItem(${item.id})">${item.title}</span>`;
-                if (editMode) {
-                    html += ` <button class="btn" style="padding:3px 8px;font-size:12px;margin-left:10px" onclick="editItem(${item.id})">✎</button>`;
-                }
-                html += `</div>`;
-            });
-            document.getElementById('tree').innerHTML = html;
-            localStorage.setItem('manifestoItems', JSON.stringify(items));
+        // Düzenleme butonları
+        if (editMode) {
+            html += ` <button onclick="editItem(${item.id})" style="font-size:11px; border:1px solid #ccc; background:white; cursor:pointer">✎</button>`;
+            html += ` <button onclick="deleteItem(${item.id})" style="font-size:11px; border:1px solid #ccc; background:white; cursor:pointer">×</button>`;
         }
         
-        // Düzenleme modu
-        function toggleEdit() {
-            editMode = !editMode;
-            document.getElementById('addBtn').style.display = editMode ? 'inline-block' : 'none';
-            document.querySelector('.edit-controls .btn').textContent = editMode ? 'Görüntüle' : 'Düzenle';
-            render();
+        html += '\n';
+        
+        // Son öğe değilse çizgi ekle
+        if (index < items.length - 1) {
+            html += '|\n';
         }
-        
-        // İçerik görüntüle
-        function viewItem(id) {
-            const item = items.find(i => i.id === id);
-            if (viewingId === id) {
-                closeContent();
-                viewingId = null;
-                return;
-            }
-            viewingId = id;
-            document.getElementById('contentTitle').textContent = item.title;
-            document.getElementById('contentBody').innerHTML = item.content;
-            document.getElementById('contentView').style.display = 'block';
-        }
-        
-        // İçerik kapat
-        function closeContent() {
-            document.getElementById('contentView').style.display = 'none';
-            viewingId = null;
-        }
-        
-        // İçerik düzenle
-        function editItem(id) {
-            editingId = id;
-            const item = items.find(i => i.id === id);
-            document.getElementById('editTitle').value = item.title;
-            document.getElementById('editContent').value = item.content;
-            document.getElementById('modal').style.display = 'flex';
-        }
-        
-        // Yeni ekle
-        function addItem() {
-            editingId = null;
-            document.getElementById('editTitle').value = '';
-            document.getElementById('editContent').value = '';
-            document.getElementById('modal').style.display = 'flex';
-        }
-        
-        // Kaydet
-        function saveItem() {
-            const title = document.getElementById('editTitle').value.trim();
-            const content = document.getElementById('editContent').value.trim();
-            
-            if (!title) return alert('Başlık gerekli!');
-            
-            if (editingId) {
-                // Düzenle
-                const item = items.find(i => i.id === editingId);
-                item.title = title;
-                item.content = content;
-            } else {
-                // Yeni ekle
-                const newId = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
-                items.push({ id: newId, title, content });
-            }
-            
-            closeModal();
-            render();
-            if (editingId === viewingId) viewItem(editingId);
-        }
-        
-        // Sil
-        function deleteItem() {
-            if (!confirm('Bu öğeyi silmek istediğinize emin misiniz?')) return;
-            
-            items = items.filter(i => i.id !== editingId);
-            closeModal();
-            render();
-            closeContent();
-        }
-        
-        // Modal kapat
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            editingId = null;
-        }
-        
-        // Başlangıç
-        render();
-        
-        // Modal dışına tıklayınca kapat
-        document.getElementById('modal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-    </script>
+    });
+    
+    document.getElementById('treeContent').innerHTML = html;
+    localStorage.setItem('manifestoData', JSON.stringify(items));
+}
+
+// 👁️ İçeriği görüntüle
+function viewContent(id) {
+    event.preventDefault();
+    
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    
+    // Aynı içeriğe tekrar tıklandıysa kapat
+    if (viewingId === id) {
+        closeContent();
+        return;
+    }
+    
+    viewingId = id;
+    document.getElementById('contentBody').innerHTML = item.content.replace(/\n/g, '<br>');
+    document.getElementById('contentView').style.display = 'block';
+}
+
+// 🙈 İçeriği kapat
+function closeContent() {
+    document.getElementById('contentView').style.display = 'none';
+    viewingId = null;
+}
+
+// 🔄 Düzenleme modu
+function toggleEdit() {
+    editMode = !editMode;
+    document.getElementById('addBtn').style.display = editMode ? 'inline-block' : 'none';
+    document.querySelector('.edit-controls .edit-btn').textContent = editMode ? 'Görüntüle' : 'Düzenle';
+    renderTree();
+}
+
+// ✏️ İçeriği düzenle
+function editItem(id) {
+    const item = items.find(i => i.id === id);
+    const newTitle = prompt('Başlık:', item.title);
+    if (newTitle === null) return;
+    
+    const newContent = prompt('İçerik (HTML kullanabilirsiniz):', item.content);
+    if (newContent === null) return;
+    
+    item.title = newTitle.trim();
+    item.content = newContent;
+    renderTree();
+    
+    // Eğer bu içerik açıksa güncelle
+    if (viewingId === id) {
+        document.getElementById('contentBody').innerHTML = item.content.replace(/\n/g, '<br>');
+    }
+}
+
+// ➕ Yeni öğe ekle
+function addItem() {
+    const title = prompt('Yeni başlık adı:');
+    if (!title) return;
+    
+    const content = prompt('İçerik:');
+    if (content === null) return;
+    
+    const newId = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
+    items.push({
+        id: newId,
+        title: title.endsWith('.html') ? title : title + '.html',
+        content: content || 'Yeni içerik'
+    });
+    
+    renderTree();
+}
+
+// 🗑️ Öğe sil
+function deleteItem(id) {
+    if (items.length <= 1) {
+        alert('En az bir başlık kalmalı!');
+        return;
+    }
+    
+    if (!confirm('Bu başlığı silmek istediğinize emin misiniz?')) return;
+    
+    items = items.filter(i => i.id !== id);
+    renderTree();
+    
+    // Eğer silinen içerik açıksa kapat
+    if (viewingId === id) {
+        closeContent();
+    }
+}
+
+// 🚀 Sayfa yüklendiğinde
+renderTree();
+
+// Modal dışına tıklayınca kapat
+document.getElementById('contentView').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeContent();
+    }
+});
+</script>
 </body>
 </html>
