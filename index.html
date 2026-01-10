@@ -2,268 +2,692 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>manifesto</title>
+    <title>ber340</title>
     <style>
-        body, .content-container, .header, .tree, .small, .sublink_small, .sublink_small:visited {
-            margin: 0;
-            padding: 0;
-            background-color: white;
-            color: black;
-        }
-        body, .header, .tree {
-            font-family: monospace;
-        }
-        .content-container {
-            max-width: 800px;
-            margin-left: 1%;
-            padding: 20px;
-            word-wrap: break-word;
-        }
-        .header, .tree {
-            white-space: pre;
-            margin-top: 10px;
-            margin-left: 1%;
-        }
-        .tree {
-            line-height: 1.3;
-            font-size: 16px;
-        }
-        .small, .sublink_small {
-            font-size: 14px;
-            text-decoration: none;
-        }
-        .sublink_small {
-            color: black;
-        }
-        .sublink_small:visited {
-            color: gray;
-        }
-        .sublink_small:hover {
-            text-decoration: underline;
+        :root {
+            --primary-color: #2c3e50;
+            --text-color: #333;
+            --border-color: #ddd;
+            --accent-color: #3498db;
+            --light-bg: #f8f9fa;
         }
         
-        /* Kontroller */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background: white;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Site Başlığı */
+        .site-header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .site-title {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: var(--primary-color);
+        }
+        
+        /* Ağaç Yapısı */
+        .tree {
+            font-family: 'Monaco', 'Consolas', monospace;
+            margin: 20px 0;
+        }
+        
+        .branch {
+            margin: 8px 0;
+            position: relative;
+        }
+        
+        .branch.main {
+            margin-left: 0;
+        }
+        
+        .branch.sub {
+            margin-left: 24px;
+        }
+        
+        .branch-line {
+            position: absolute;
+            left: -16px;
+            top: 12px;
+            width: 12px;
+            height: 1px;
+            background: var(--border-color);
+        }
+        
+        .branch-title {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 3px;
+        }
+        
+        .branch-title:hover {
+            background: var(--light-bg);
+        }
+        
+        .branch-title.active {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        .toggle-icon {
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            margin-right: 8px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* İçerik Görünümü */
+        .content-view {
+            margin: 25px 0 40px 24px;
+            padding: 25px;
+            border-left: 3px solid var(--accent-color);
+            background: var(--light-bg);
+            border-radius: 0 8px 8px 0;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .content-body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+        
+        .content-body a {
+            color: var(--accent-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--accent-color);
+        }
+        
+        .content-body a:hover {
+            border-bottom-width: 2px;
+        }
+        
+        /* Düzenleme Kontrolleri */
         .edit-controls {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
             z-index: 100;
         }
-        .edit-btn {
-            font-family: monospace;
-            font-size: 12px;
+        
+        .control-btn {
             background: white;
-            border: 1px solid #ccc;
-            padding: 5px 10px;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
             cursor: pointer;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            color: var(--primary-color);
+            border-radius: 4px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
-        /* İçerik görünümü */
-        .content-view {
+        .control-btn:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* Düzenleme Modalı */
+        .modal-overlay {
+            display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal {
             background: white;
-            border: 1px solid #ccc;
-            padding: 20px;
+            padding: 30px;
             width: 90%;
             max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        .close-btn {
-            float: right;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .content-body a {
-            color: #0645ad;
-            text-decoration: none;
-        }
-        .content-body a:hover {
-            text-decoration: underline;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
-        /* Mobil */
-        @media (max-width: 600px) {
-            .content-container {
-                padding: 10px;
-                margin-left: 0;
-            }
-            .tree {
-                font-size: 14px;
-                margin-left: 0;
-            }
+        .modal-header {
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+        
+        .form-textarea {
+            height: 200px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .btn {
+            padding: 10px 24px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--light-bg);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        /* Mobil Uyum */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            
+            .container { max-width: 100%; }
+            
             .edit-controls {
                 position: static;
-                text-align: right;
                 margin-bottom: 20px;
+                justify-content: center;
             }
+            
+            .branch.sub { margin-left: 20px; }
+            
             .content-view {
-                width: 95%;
-                padding: 15px;
+                margin-left: 0;
+                padding: 20px;
             }
+            
+            .modal { padding: 20px; }
+            
+            .form-actions {
+                flex-wrap: wrap;
+            }
+            
+            .btn { flex: 1; min-width: 100px; }
+        }
+        
+        /* Yardımcı Sınıflar */
+        .hidden { display: none; }
+        .visible { display: block; }
+        
+        /* Alt Başlık Seçici */
+        .parent-select {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Çizgi Bağlantıları */
+        .branch-connector {
+            position: relative;
+        }
+        
+        .branch-connector::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: -12px;
+            height: calc(100% + 12px);
+            width: 1px;
+            background: var(--border-color);
+        }
+        
+        .branch-connector:last-child::before {
+            height: 24px;
         }
     </style>
 </head>
 <body>
-<div class="content-container">
-    <!-- Kontroller -->
-    <div class="edit-controls">
-        <button class="edit-btn" onclick="toggleEdit()">Düzenle</button>
-        <button class="edit-btn" id="addBtn" style="display:none" onclick="addItem()">+</button>
-    </div>
-
-    <!-- Ağaç yapısı -->
-    <div class="tree" id="treeContent">
-        <!-- İçerik buraya eklenecek -->
-    </div>
-    
-    <!-- İçerik görünümü -->
-    <div class="content-view" id="contentView">
-        <button class="close-btn" onclick="closeContent()">×</button>
-        <div id="contentBody"></div>
-    </div>
-</div>
-
-<script>
-// 📦 Veriler
-let items = JSON.parse(localStorage.getItem('manifestoData')) || [
-    { id: 1, title: "ilk-baslik.html", content: "Bu ilk başlığın içeriği.\n\nDüzenleme modunu açarak yeni başlıklar ekleyebilirsiniz." },
-    { id: 2, title: "ornek-link.html", content: "Bu bir örnek içeriktir.\n\nBağlantı eklemek için HTML kullanın: <a href='https://example.com'>Örnek site</a>" }
-];
-
-let editMode = false;
-let viewingId = null;
-
-// 🌳 Ağaç yapısını oluştur
-function renderTree() {
-    let html = '';
-    
-    items.forEach((item, index) => {
-        // Başlık satırı
-        html += `|——<a href="#" onclick="viewContent(${item.id})" class="small">${item.title}</a>`;
+    <div class="container">
+        <!-- Site Başlığı -->
+        <header class="site-header">
+            <h1 class="site-title">ber340</h1>
+        </header>
         
-        // Düzenleme butonları
-        if (editMode) {
-            html += ` <button onclick="editItem(${item.id})" style="font-size:11px; border:1px solid #ccc; background:white; cursor:pointer">✎</button>`;
-            html += ` <button onclick="deleteItem(${item.id})" style="font-size:11px; border:1px solid #ccc; background:white; cursor:pointer">×</button>`;
+        <!-- Düzenleme Kontrolleri -->
+        <div class="edit-controls">
+            <button class="control-btn" id="editModeBtn">Düzenle</button>
+            <button class="control-btn" id="addMainBtn" style="display: none">+ Ana Başlık</button>
+        </div>
+        
+        <!-- Ağaç Yapısı -->
+        <div class="tree" id="treeView"></div>
+        
+        <!-- Düzenleme Modalı -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">İçerik Düzenle</h2>
+                </div>
+                
+                <form id="editForm">
+                    <div class="form-group">
+                        <label class="form-label">Başlık</label>
+                        <input type="text" class="form-input" id="editTitle" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">İçerik</label>
+                        <textarea class="form-textarea" id="editContent" 
+                                  placeholder="İçeriğinizi buraya yazın. HTML kullanabilirsiniz."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="addLinkCheckbox"> Link Ekle
+                        </label>
+                        <input type="url" class="form-input" id="editLink" placeholder="https://ornek.com" style="display: none">
+                    </div>
+                    
+                    <div class="parent-select" id="parentSelect" style="display: none">
+                        <label class="form-label">Üst Başlık</label>
+                        <select class="form-input" id="parentId">
+                            <option value="">Ana Başlık Olarak Ekle</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">İptal</button>
+                        <button type="button" class="btn btn-danger" onclick="deleteItem()" id="deleteBtn">Sil</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 📦 Veri Yapısı
+        let siteData = JSON.parse(localStorage.getItem('ber340Data')) || [
+            {
+                id: 1,
+                title: "ilk-baslik.html",
+                content: "Bu ilk başlığın içeriği. Düzenleme modunu açarak yeni başlıklar ve alt başlıklar ekleyebilirsiniz.",
+                link: "",
+                children: [
+                    {
+                        id: 11,
+                        title: "alt-baslik-1.html",
+                        content: "Bu bir alt başlık örneği. Alt başlıklar ana başlıkların altında görüntülenir.",
+                        link: "https://example.com",
+                        children: []
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "ikinci-baslik.html",
+                content: "İkinci ana başlık içeriği burada. İçeriklere HTML etiketleri ve linkler ekleyebilirsiniz.",
+                link: "",
+                children: []
+            }
+        ];
+
+        // 🎯 Durum Değişkenleri
+        let editMode = false;
+        let editingItem = null;
+        let openContents = new Set();
+
+        // 🌳 Ağaç Yapısını Render Et
+        function renderTree() {
+            const treeView = document.getElementById('treeView');
+            let html = '';
+            
+            function renderBranch(item, level = 0, isLast = false) {
+                const isOpen = openContents.has(item.id);
+                const hasChildren = item.children && item.children.length > 0;
+                
+                let branchClass = level === 0 ? 'branch main' : 'branch sub branch-connector';
+                
+                html += `<div class="${branchClass}" style="margin-left: ${level * 24}px">`;
+                
+                // Başlık Satırı
+                html += `<div class="branch-title ${isOpen ? 'active' : ''}" onclick="toggleContent(${item.id})">`;
+                html += `<span class="toggle-icon">${hasChildren ? (isOpen ? '▼' : '▶') : '•'}</span>`;
+                html += `<span>${item.title}</span>`;
+                
+                // Düzenleme Butonları
+                if (editMode) {
+                    html += `<span style="margin-left: auto; display: flex; gap: 5px;">`;
+                    html += `<button class="control-btn" style="padding: 2px 6px; font-size: 11px" onclick="editItem(${item.id})">Düzenle</button>`;
+                    if (level === 0) {
+                        html += `<button class="control-btn" style="padding: 2px 6px; font-size: 11px" onclick="addSubItem(${item.id})">+ Alt</button>`;
+                    }
+                    html += `</span>`;
+                }
+                
+                html += `</div>`;
+                
+                // İçerik Görünümü
+                if (isOpen) {
+                    html += `<div class="content-view visible" id="content-${item.id}">`;
+                    html += `<div class="content-body">${formatContent(item)}</div>`;
+                    html += `</div>`;
+                }
+                
+                // Alt Başlıklar
+                if (hasChildren) {
+                    item.children.forEach((child, index) => {
+                        renderBranch(child, level + 1, index === item.children.length - 1);
+                    });
+                }
+                
+                html += `</div>`;
+            }
+            
+            // Ana başlıkları render et
+            siteData.forEach((item, index) => {
+                renderBranch(item, 0, index === siteData.length - 1);
+            });
+            
+            treeView.innerHTML = html;
+            localStorage.setItem('ber340Data', JSON.stringify(siteData));
         }
-        
-        html += '\n';
-        
-        // Son öğe değilse çizgi ekle
-        if (index < items.length - 1) {
-            html += '|\n';
+
+        // 📝 İçeriği Formatla (linkleri ve yeni satırları düzelt)
+        function formatContent(item) {
+            let content = item.content || '';
+            
+            // Yeni satırları <br> ile değiştir
+            content = content.replace(/\n/g, '<br>');
+            
+            // Link ekle
+            if (item.link && item.link.trim() !== '') {
+                content += `<br><br><a href="${item.link}" target="_blank">📎 ${item.link}</a>`;
+            }
+            
+            return content;
         }
-    });
-    
-    document.getElementById('treeContent').innerHTML = html;
-    localStorage.setItem('manifestoData', JSON.stringify(items));
-}
 
-// 👁️ İçeriği görüntüle
-function viewContent(id) {
-    event.preventDefault();
-    
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-    
-    // Aynı içeriğe tekrar tıklandıysa kapat
-    if (viewingId === id) {
-        closeContent();
-        return;
-    }
-    
-    viewingId = id;
-    document.getElementById('contentBody').innerHTML = item.content.replace(/\n/g, '<br>');
-    document.getElementById('contentView').style.display = 'block';
-}
+        // 👁️ İçeriği Aç/Kapat
+        function toggleContent(id) {
+            if (openContents.has(id)) {
+                openContents.delete(id);
+            } else {
+                openContents.add(id);
+            }
+            renderTree();
+        }
 
-// 🙈 İçeriği kapat
-function closeContent() {
-    document.getElementById('contentView').style.display = 'none';
-    viewingId = null;
-}
+        // 🔄 Düzenleme Modunu Aç/Kapat
+        function toggleEditMode() {
+            editMode = !editMode;
+            document.getElementById('editModeBtn').textContent = editMode ? 'Görüntüle' : 'Düzenle';
+            document.getElementById('addMainBtn').style.display = editMode ? 'block' : 'none';
+            renderTree();
+        }
 
-// 🔄 Düzenleme modu
-function toggleEdit() {
-    editMode = !editMode;
-    document.getElementById('addBtn').style.display = editMode ? 'inline-block' : 'none';
-    document.querySelector('.edit-controls .edit-btn').textContent = editMode ? 'Görüntüle' : 'Düzenle';
-    renderTree();
-}
+        // ✏️ İçeriği Düzenle
+        function editItem(id) {
+            const item = findItemById(id);
+            if (!item) return;
+            
+            editingItem = item;
+            document.getElementById('modalTitle').textContent = 'İçerik Düzenle';
+            document.getElementById('editTitle').value = item.title;
+            document.getElementById('editContent').value = item.content;
+            document.getElementById('editLink').value = item.link || '';
+            document.getElementById('parentSelect').style.display = 'none';
+            document.getElementById('deleteBtn').style.display = 'block';
+            
+            openModal();
+        }
 
-// ✏️ İçeriği düzenle
-function editItem(id) {
-    const item = items.find(i => i.id === id);
-    const newTitle = prompt('Başlık:', item.title);
-    if (newTitle === null) return;
-    
-    const newContent = prompt('İçerik (HTML kullanabilirsiniz):', item.content);
-    if (newContent === null) return;
-    
-    item.title = newTitle.trim();
-    item.content = newContent;
-    renderTree();
-    
-    // Eğer bu içerik açıksa güncelle
-    if (viewingId === id) {
-        document.getElementById('contentBody').innerHTML = item.content.replace(/\n/g, '<br>');
-    }
-}
+        // ➕ Ana Başlık Ekle
+        function addMainItem() {
+            editingItem = null;
+            document.getElementById('modalTitle').textContent = 'Yeni Ana Başlık';
+            document.getElementById('editTitle').value = '';
+            document.getElementById('editContent').value = '';
+            document.getElementById('editLink').value = '';
+            document.getElementById('parentSelect').style.display = 'none';
+            document.getElementById('deleteBtn').style.display = 'none';
+            
+            openModal();
+        }
 
-// ➕ Yeni öğe ekle
-function addItem() {
-    const title = prompt('Yeni başlık adı:');
-    if (!title) return;
-    
-    const content = prompt('İçerik:');
-    if (content === null) return;
-    
-    const newId = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    items.push({
-        id: newId,
-        title: title.endsWith('.html') ? title : title + '.html',
-        content: content || 'Yeni içerik'
-    });
-    
-    renderTree();
-}
+        // ➕ Alt Başlık Ekle
+        function addSubItem(parentId) {
+            const parent = findItemById(parentId);
+            if (!parent) return;
+            
+            editingItem = { parentId: parentId };
+            document.getElementById('modalTitle').textContent = 'Yeni Alt Başlık';
+            document.getElementById('editTitle').value = '';
+            document.getElementById('editContent').value = '';
+            document.getElementById('editLink').value = '';
+            document.getElementById('parentSelect').style.display = 'none';
+            document.getElementById('deleteBtn').style.display = 'none';
+            
+            openModal();
+        }
 
-// 🗑️ Öğe sil
-function deleteItem(id) {
-    if (items.length <= 1) {
-        alert('En az bir başlık kalmalı!');
-        return;
-    }
-    
-    if (!confirm('Bu başlığı silmek istediğinize emin misiniz?')) return;
-    
-    items = items.filter(i => i.id !== id);
-    renderTree();
-    
-    // Eğer silinen içerik açıksa kapat
-    if (viewingId === id) {
-        closeContent();
-    }
-}
+        // 💾 İçeriği Kaydet
+        function saveItem() {
+            const title = document.getElementById('editTitle').value.trim();
+            const content = document.getElementById('editContent').value;
+            const link = document.getElementById('editLink').value.trim();
+            
+            if (!title) {
+                alert('Başlık gerekli!');
+                return;
+            }
+            
+            if (editingItem) {
+                if (editingItem.parentId) {
+                    // Yeni alt başlık
+                    const parent = findItemById(editingItem.parentId);
+                    const newId = generateId();
+                    parent.children.push({
+                        id: newId,
+                        title: title.endsWith('.html') ? title : title + '.html',
+                        content: content,
+                        link: link,
+                        children: []
+                    });
+                } else if (editingItem.id) {
+                    // Mevcut öğeyi güncelle
+                    editingItem.title = title.endsWith('.html') ? title : title + '.html';
+                    editingItem.content = content;
+                    editingItem.link = link;
+                } else {
+                    // Yeni ana başlık
+                    const newId = generateId();
+                    siteData.push({
+                        id: newId,
+                        title: title.endsWith('.html') ? title : title + '.html',
+                        content: content,
+                        link: link,
+                        children: []
+                    });
+                }
+            }
+            
+            closeModal();
+            renderTree();
+        }
 
-// 🚀 Sayfa yüklendiğinde
-renderTree();
+        // 🗑️ İçeriği Sil
+        function deleteItem() {
+            if (!confirm('Bu öğeyi ve tüm alt başlıklarını silmek istediğinize emin misiniz?')) {
+                return;
+            }
+            
+            if (editingItem && editingItem.id) {
+                removeItemById(editingItem.id);
+                openContents.delete(editingItem.id);
+            }
+            
+            closeModal();
+            renderTree();
+        }
 
-// Modal dışına tıklayınca kapat
-document.getElementById('contentView').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeContent();
-    }
-});
-</script>
+        // 🔍 ID'ye göre öğe bul
+        function findItemById(id) {
+            function search(items) {
+                for (const item of items) {
+                    if (item.id === id) return item;
+                    if (item.children && item.children.length > 0) {
+                        const found = search(item.children);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+            return search(siteData);
+        }
+
+        // 🗑️ ID'ye göre öğe sil
+        function removeItemById(id) {
+            function removeFromArray(arr) {
+                const index = arr.findIndex(item => item.id === id);
+                if (index > -1) {
+                    arr.splice(index, 1);
+                    return true;
+                }
+                for (const item of arr) {
+                    if (item.children && item.children.length > 0) {
+                        if (removeFromArray(item.children)) return true;
+                    }
+                }
+                return false;
+            }
+            removeFromArray(siteData);
+        }
+
+        // 🔢 Yeni ID oluştur
+        function generateId() {
+            return Date.now() + Math.floor(Math.random() * 1000);
+        }
+
+        // 📱 Modal İşlemleri
+        function openModal() {
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+            editingItem = null;
+            document.getElementById('editForm').reset();
+        }
+
+        // 📋 Link Ekleme Kontrolü
+        document.getElementById('addLinkCheckbox').addEventListener('change', function(e) {
+            document.getElementById('editLink').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        // 📝 Form Gönderimi
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveItem();
+        });
+
+        // 🚀 Sayfa Yüklendiğinde
+        document.getElementById('editModeBtn').addEventListener('click', toggleEditMode);
+        document.getElementById('addMainBtn').addEventListener('click', addMainItem);
+        
+        // Modal dışına tıklayınca kapat
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // İlk render
+        renderTree();
+    </script>
 </body>
 </html>
