@@ -64,6 +64,10 @@
             padding: 3px 5px;
             margin-left: 5px;
             word-wrap: break-word;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         
         .content-view {
@@ -77,6 +81,8 @@
             line-height: 1.6;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            user-select: text;
+            -webkit-user-select: text;
         }
         
         .content-body a {
@@ -326,9 +332,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
             
-            // Ctrl+Shift+E kombinasyonu
+            // Ctrl+Ş kombinasyonu
             document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+                if (e.ctrlKey && !e.shiftKey && e.key === 'ş') {
                     e.preventDefault();
                     if (!isAuthenticated) {
                         document.getElementById('authModal').style.display = 'block';
@@ -461,9 +467,19 @@
             editMode = !editMode;
             const addBtn = document.getElementById('addBtn');
             const toggleBtn = document.getElementById('toggleEditBtn');
+            const editControls = document.getElementById('editControls');
             
-            addBtn.style.display = editMode ? 'inline-block' : 'none';
-            toggleBtn.textContent = editMode ? 'Kapat' : 'Düzenle';
+            if (editMode) {
+                addBtn.style.display = 'inline-block';
+                toggleBtn.textContent = 'Kapat';
+            } else {
+                // Düzenleme kapatılınca her şeyi gizle
+                addBtn.style.display = 'none';
+                toggleBtn.textContent = 'Düzenle';
+                editControls.style.display = 'none';
+                isAuthenticated = false;
+            }
+            
             renderTree();
         }
         
