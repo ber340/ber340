@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ber340</title>
     <style>
@@ -249,74 +250,25 @@
     </div>
 
     <script>
-        const defaultData = [[
-  {
-    "id": 1,
-    "title": "araçlarım",
-    "content": " ",
-    "link": "ber340.github.io/asgarihesaplama",
-    "children": [],
-    "links": [
-      "https://ber340.github.io/asgarihesaplama/",
-      "https://ber340.github.io/sosyoekonomik/"
-    ]
-  },
-  {
-    "id": 1768052674823,
-    "title": "arşivler",
-    "content": "",
-    "links": [],
-    "children": [
-      {
-        "id": 1768053050965,
-        "title": "müzik arşivi",
-        "content": "",
-        "links": [
-          "lucida.to ",
-          "http://tidal.squid.wtf",
-          "https://eu.doubledouble.top",
-          "https://dabmusic.xyz",
-          "https://amz.squid.wtf",
-          "https://qobuz.squid.wtf",
-          "https://khinsider.squid.wtf",
-          "https://music.binimum.org",
-          "https://tidal.qqdl.site",
-          "https://flacmania.biz/"
-        ],
-        "children": []
-      },
-      {
-        "id": 1768053470178,
-        "title": "kitap arşivi",
-        "content": "",
-        "links": [
-          "https://annas-archive.se/",
-          "https://z-lib.gd/",
-          "https://welib.org/"
-        ],
-        "children": []
-      }
-    ]
-  }
-]];
+        var defaultData = [];
         
-        let items = [];
-        let editMode = false;
-        let editingId = null;
-        let openItems = new Set();
-        let isAuthenticated = false;
+        var items = [];
+        var editMode = false;
+        var editingId = null;
+        var openItems = new Set();
+        var isAuthenticated = false;
         
         function loadData() {
-            const saved = localStorage.getItem('ber340Data');
+            var saved = localStorage.getItem('ber340Data');
             if (saved) {
                 try {
                     items = JSON.parse(saved);
                 } catch (e) {
                     console.error('Veri yüklenemedi:', e);
-                    items = [...defaultData];
+                    items = defaultData.slice();
                 }
             } else {
-                items = [...defaultData];
+                items = defaultData.slice();
             }
         }
         
@@ -329,7 +281,7 @@
         }
         
         function checkAuth() {
-            const input = document.getElementById('authInput').value;
+            var input = document.getElementById('authInput').value;
             if (input === 'köpek') {
                 isAuthenticated = true;
                 document.getElementById('authModal').style.display = 'none';
@@ -343,10 +295,10 @@
         }
         
         function exportJSON() {
-            const dataStr = JSON.stringify(items, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            var dataStr = JSON.stringify(items, null, 2);
+            var blob = new Blob([dataStr], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
             a.href = url;
             a.download = 'ber340-data.json';
             a.click();
@@ -354,10 +306,10 @@
         }
         
         function importJSON(file) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
+                    var importedData = JSON.parse(e.target.result);
                     items = importedData;
                     saveData();
                     renderTree();
@@ -374,7 +326,7 @@
             loadData();
             
             document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey && !e.shiftKey && e.key === 'ş') {
+                if (e.ctrlKey && !e.shiftKey && (e.key === 'ş' || e.key === 'ı')) {
                     e.preventDefault();
                     if (!isAuthenticated) {
                         document.getElementById('authModal').style.display = 'block';
@@ -416,19 +368,24 @@
         });
         
         function renderTree() {
-            const container = document.getElementById('treeView');
+            var container = document.getElementById('treeView');
             container.innerHTML = '';
             
-            function renderItem(item, parentElement, isLastChild = false) {
-                const wrapper = document.createElement('div');
+            if (items.length === 0) {
+                container.innerHTML = '<div style="padding:20px; text-align:center;">Henüz içerik yok</div>';
+                return;
+            }
+            
+            function renderItem(item, parentElement, isLastChild) {
+                var wrapper = document.createElement('div');
                 
-                const branchDiv = document.createElement('div');
+                var branchDiv = document.createElement('div');
                 branchDiv.className = 'branch';
                 if (isLastChild) {
                     branchDiv.classList.add('last-child');
                 }
                 
-                const titleSpan = document.createElement('span');
+                var titleSpan = document.createElement('span');
                 titleSpan.className = 'branch-title';
                 titleSpan.textContent = item.title;
                 titleSpan.addEventListener('click', function(e) {
@@ -438,7 +395,7 @@
                 branchDiv.appendChild(titleSpan);
                 
                 if (editMode && isAuthenticated) {
-                    const editBtn = document.createElement('button');
+                    var editBtn = document.createElement('button');
                     editBtn.className = 'edit-btn small-btn';
                     editBtn.textContent = 'D';
                     editBtn.addEventListener('click', function(e) {
@@ -447,7 +404,7 @@
                     });
                     branchDiv.appendChild(editBtn);
                     
-                    const addChildBtn = document.createElement('button');
+                    var addChildBtn = document.createElement('button');
                     addChildBtn.className = 'edit-btn small-btn';
                     addChildBtn.textContent = 'A';
                     addChildBtn.addEventListener('click', function(e) {
@@ -459,18 +416,18 @@
                 
                 wrapper.appendChild(branchDiv);
                 
-                const isOpen = openItems.has(item.id);
+                var isOpen = openItems.has(item.id);
                 
                 if (isOpen) {
-                    const hasContent = item.content || (item.links && item.links.length > 0);
-                    const hasChildren = item.children && item.children.length > 0;
+                    var hasContent = item.content || (item.links && item.links.length > 0);
+                    var hasChildren = item.children && item.children.length > 0;
                     
                     if (hasContent) {
-                        const contentDiv = document.createElement('div');
+                        var contentDiv = document.createElement('div');
                         contentDiv.className = 'content-view';
                         contentDiv.style.display = 'block';
                         
-                        const contentBody = document.createElement('div');
+                        var contentBody = document.createElement('div');
                         contentBody.className = 'content-body';
                         contentBody.innerHTML = formatContent(item);
                         contentDiv.appendChild(contentBody);
@@ -479,13 +436,13 @@
                     }
                     
                     if (hasChildren) {
-                        const childrenContainer = document.createElement('div');
+                        var childrenContainer = document.createElement('div');
                         childrenContainer.style.marginLeft = '0';
                         
-                        item.children.forEach((child, index) => {
-                            const isLast = index === item.children.length - 1;
-                            renderItem(child, childrenContainer, isLast);
-                        });
+                        for (var i = 0; i < item.children.length; i++) {
+                            var isLast = i === item.children.length - 1;
+                            renderItem(item.children[i], childrenContainer, isLast);
+                        }
                         
                         wrapper.appendChild(childrenContainer);
                     }
@@ -494,30 +451,40 @@
                 parentElement.appendChild(wrapper);
             }
             
-            items.forEach((item, index) => {
-                const isLast = index === items.length - 1;
-                renderItem(item, container, isLast);
-            });
+            for (var i = 0; i < items.length; i++) {
+                var isLast = i === items.length - 1;
+                renderItem(items[i], container, isLast);
+            }
         }
         
         function formatContent(item) {
-            let content = item.content || '';
+            var content = item.content || '';
+            
+            var urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/g;
+            content = content.replace(urlRegex, function(match) {
+                var url = match;
+                if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+                    url = 'https://' + url;
+                }
+                return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + match + '</a>';
+            });
+            
             content = content.replace(/\n/g, '<br>');
             
             if (item.links && item.links.length > 0) {
                 if (content) {
                     content += '<br><br>';
                 }
-                item.links.forEach(link => {
-                    const trimmed = link.trim();
+                for (var i = 0; i < item.links.length; i++) {
+                    var trimmed = item.links[i].trim();
                     if (trimmed) {
-                        let url = trimmed;
-                        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        var url = trimmed;
+                        if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
                             url = 'https://' + url;
                         }
-                        content += `<a href="${url}" target="_blank" rel="noopener noreferrer">${trimmed}</a><br>`;
+                        content += '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + trimmed + '</a><br>';
                     }
-                });
+                }
             }
             
             return content;
@@ -534,12 +501,12 @@
         }
         
         function closeAllChildren(parentId) {
-            const parent = findItem(parentId);
+            var parent = findItem(parentId);
             if (parent && parent.children) {
-                parent.children.forEach(child => {
-                    openItems.delete(child.id);
-                    closeAllChildren(child.id);
-                });
+                for (var i = 0; i < parent.children.length; i++) {
+                    openItems.delete(parent.children[i].id);
+                    closeAllChildren(parent.children[i].id);
+                }
             }
         }
         
@@ -547,9 +514,9 @@
             if (!isAuthenticated) return;
             
             editMode = !editMode;
-            const addBtn = document.getElementById('addBtn');
-            const toggleBtn = document.getElementById('toggleEditBtn');
-            const editControls = document.getElementById('editControls');
+            var addBtn = document.getElementById('addBtn');
+            var toggleBtn = document.getElementById('toggleEditBtn');
+            var editControls = document.getElementById('editControls');
             
             if (editMode) {
                 addBtn.style.display = 'inline-block';
@@ -567,7 +534,7 @@
         function editItem(id) {
             if (!isAuthenticated) return;
             
-            const item = findItem(id);
+            var item = findItem(id);
             if (!item) return;
             
             editingId = id;
@@ -592,13 +559,13 @@
         function addChild(parentId) {
             if (!isAuthenticated) return;
             
-            const parent = findItem(parentId);
+            var parent = findItem(parentId);
             if (!parent) return;
             
-            const title = prompt('Alt başlık:');
+            var title = prompt('Alt başlık:');
             if (!title) return;
             
-            const newId = Date.now();
+            var newId = Date.now();
             if (!parent.children) {
                 parent.children = [];
             }
@@ -617,26 +584,28 @@
         function saveItem() {
             if (!isAuthenticated) return;
             
-            const title = document.getElementById('editTitle').value.trim();
-            const content = document.getElementById('editContent').value;
-            const linksText = document.getElementById('editLinks').value;
+            var title = document.getElementById('editTitle').value.trim();
+            var content = document.getElementById('editContent').value;
+            var linksText = document.getElementById('editLinks').value;
             
             if (!title) {
                 alert('Başlık gerekli');
                 return;
             }
             
-            const links = linksText.split('\n').filter(link => link.trim());
+            var links = linksText.split('\n').filter(function(link) {
+                return link.trim();
+            });
             
             if (editingId) {
-                const item = findItem(editingId);
+                var item = findItem(editingId);
                 if (item) {
                     item.title = title;
                     item.content = content;
                     item.links = links;
                 }
             } else {
-                const newId = Date.now();
+                var newId = Date.now();
                 items.push({
                     id: newId,
                     title: title,
@@ -656,7 +625,7 @@
             if (!confirm('Silinsin mi?')) return;
             
             function removeItem(arr, id) {
-                for (let i = 0; i < arr.length; i++) {
+                for (var i = 0; i < arr.length; i++) {
                     if (arr[i].id === id) {
                         arr.splice(i, 1);
                         return true;
@@ -676,10 +645,10 @@
         
         function findItem(id) {
             function search(arr) {
-                for (const item of arr) {
-                    if (item.id === id) return item;
-                    if (item.children) {
-                        const found = search(item.children);
+                for (var i = 0; i < arr.length; i++) {
+                    if (arr[i].id === id) return arr[i];
+                    if (arr[i].children) {
+                        var found = search(arr[i].children);
                         if (found) return found;
                     }
                 }
